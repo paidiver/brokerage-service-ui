@@ -1,0 +1,87 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  body {
+    font-family: Roboto, Arial, sans-serif;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  a:hover {
+    color: #00b5ff;
+  }
+
+  a[role='button'] {
+    text-decoration: none;
+  }
+
+  a[role='button']:hover {
+    color: black;
+  }
+
+  a[role='menuitem'] {
+    text-decoration: none;
+  }
+
+  h1 {
+    @apply text-xl font-bold;
+  }
+
+  h2 {
+    @apply text-lg font-bold;
+  }
+
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .accordion section {
+    overflow-y: visible !important;
+  }
+
+  .text-muted {
+    color: #6c757d;
+  }
+
+  .table {
+    @apply w-full table-auto border-collapse border-spacing-1 text-left;
+  }
+
+  .table td,
+  .table th {
+    @apply p-2;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .table-bordered td,
+  .table-bordered th {
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+  }
+
+  .no-checkbox label {
+    display: none;
+  }
+
+  .no-checkbox td::before {
+    opacity: 0 !important;
+  }
+
+  /* Styles for the WYSIWYG editor */
+  .rsw-ce ul {
+    list-style: disc;
+    padding-left: 2em;
+  }
+
+  .rsw-ce ol {
+    list-style: decimal;
+    padding-left: 2em;
+  }
+  /* end WYSIWYG styles */
+}
