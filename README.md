@@ -20,6 +20,18 @@ To run the full application locally against local services, you will also need:
 - Docker and Docker Compose
 - a local instance of the **Brokerage Service API**: please see the [`brokerage-service-api` repository](https://github.com/paidiver/brokerage-service-api) for setup instructions
 
+### Making API Calls
+
+ALl API calls must call `apiUrl()` helper from [src/utils.ts](./src/utils.ts) rather than hardcoding URLs. This ensures correct API base url is BEING used.
+
+```ts
+import { apiUrl } from '@/utils'
+
+const response = await fetch(apiUrl('/api/annotations/search'))
+```
+
+The base URL is controlled by the NEXT_PUBLIC_BROKERAGE_SERVICE_API environment variable, set at build time. 
+
 ## Deployment
 
 Deployment is handled automatically using a GitHub Actions workflow that runs on every push to the `main` branch.
