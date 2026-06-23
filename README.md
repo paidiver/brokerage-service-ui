@@ -23,10 +23,20 @@ To run the full application locally against local services, you will also need:
 ## Deployment
 
 Deployment is handled automatically using a GitHub Actions workflow that runs on every push to the `main` branch.
+The built site will be published to `https://paidiver.github.io/brokerage-service-ui/`
 
 Because this site is deployed as a static brokerage-service-ui on GitHub Pages:
 
 - it can only interact with backend services that are publicly reachable from the browser
+
+**Required Cnfiguration:**
+- Repository Variable `NEXT_PUBLIC_BROKERAGE_SERVICE_API` : The base url for backend API (e.g. `https://brokerage-service.paidiver.site`)
+
+## Smoke checks after deployment
+
+1. Open `https://paidiver.github.io/brokerage-service-ui/` — the app should load.
+2. Open browser DevTools → Network, trigger an API-dependent action,
+   confirm requests go to the configured API base URL and return 2xx.
 
 ## Quick Start
 

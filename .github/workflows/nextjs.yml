@@ -34,7 +34,7 @@ jobs:
 
       - name: Setup Environment variables
         run: |
-          echo "NEXT_PUBLIC_BROKERAGE_SERVICE_API=https://brokerage-service.paidiver.site" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_BROKERAGE_SERVICE_API={{ vars.NEXT_PUBLIC_BROKERAGE_SERVICE_API}}" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_BASE_PATH=/${{ github.event.repository.name }}" >> $GITHUB_ENV
 
       - name: Detect package manager
