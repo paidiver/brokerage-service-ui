@@ -40,3 +40,25 @@ export interface TaxonWormsLike {
     cached_at?: Date | null
     parent_AphiaID?: number | null
 }
+
+export interface TaxaBulkResponse {
+    results: UpstreamResponse<TaxonWormsLike[]>[]
+}
+
+
+export interface HealthCheckResponse {
+    status: string
+}
+
+
+export interface SourceInfo {
+    source_name: string
+    source_label: string
+    base_url: string
+    status: 'ok' | 'unhealthy' | 'unknown'
+}
+
+
+export interface SourcesInfoResponse {
+    sources: SourceInfo[]
+}
