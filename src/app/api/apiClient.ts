@@ -1,4 +1,4 @@
-import axios, { AxiosResponse} from "axios";
+import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BROKERAGE_SERVICE_API ?? 'https://brokerage-service.paidiver.site';
@@ -11,24 +11,23 @@ const apiClient = axios.create({
     }
 })
 
-interface RequestOptions {
+interface RequestOptions extends Omit<AxiosRequestConfig, 'method' | 'url'> {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     url: string;
     queryParams?: Record<string, string | number | boolean>;
-    data?: any;
 }
 
 export const apiRequest = async <T>({
     method,
     url,
     queryParams,
-    data}: RequestOptions
+    ...extraConfig}: RequestOptions
 ): Promise<T> => {
   const response: AxiosResponse<T> = await apiClient({
     method,
     url,
     params: queryParams,
-    data,
+    ...extraConfig
   });
 
   return response.data;
