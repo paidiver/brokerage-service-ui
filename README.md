@@ -22,7 +22,7 @@ To run the full application locally against local services, you will also need:
 
 ### Making API Calls
 
-ALl API calls must call `apiUrl()` helper from [src/utils.ts](./src/utils.ts) rather than hardcoding URLs. This ensures correct API base url is BEING used.
+All API calls must call `apiUrl()` helper from [src/utils.ts](./src/utils.ts) rather than hardcoding URLs. This ensures correct API base url is BEING used.
 
 ```ts
 import { apiUrl } from '@/utils'
