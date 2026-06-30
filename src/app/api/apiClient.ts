@@ -3,7 +3,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BROKERAGE_SERVICE_API ?? 'https://brokerage-service.paidiver.site';
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
     baseURL: API_BASE_URL,
     timeout: 10000,
     headers: {
