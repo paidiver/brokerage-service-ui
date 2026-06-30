@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run"
   },
   "dependencies": {
     "@bodc/navbar": "^1.0.6",
@@ -26,6 +27,7 @@
     "@eslint/eslintrc": "^3",
     "@next/eslint-plugin-next": "^16.1.6",
     "@tailwindcss/postcss": "^4.2.2",
+    "@testing-library/react": "^16.3.2",
     "@types/lodash": "^4.17.24",
     "@types/node": "^20",
     "@types/qs": "^6.15.0",
@@ -34,6 +36,7 @@
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
     "autoprefixer": "^10.4.27",
+    "axios-mock-adapter": "^2.1.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^10.0.1",
     "eslint-config-next": "^0.2.4",
@@ -43,6 +46,7 @@
     "postcss": "^8.5.8",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9"
   }
 }
