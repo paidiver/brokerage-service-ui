@@ -14,7 +14,7 @@ const apiClient = axios.create({
     }
 })
 
-interface RequestOptions extends Omit<AxiosRequestConfig, 'method' | 'url'> {
+export interface RequestOptions extends Omit<AxiosRequestConfig, 'method' | 'url'> {
     method: AxiosRequestConfig['method'];
     url: string;
     queryParams?: Record<string, string | number | boolean | string[] | number[] | boolean[]>;
