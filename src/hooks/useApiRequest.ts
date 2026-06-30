@@ -32,10 +32,21 @@ export function useApiRequest<T>() {
             setState({
                 data: responseData,
                 status: emptyData ? 'empty' : 'success',
-                error: null
+                error: emptyData ? new AxiosError('No data returned from API') : null
             })
-        } catch (error) {
-            // Handle AxiosError
+        } catch (error: AxiosError | unknown) {
+            const axiosError = error as AxiosError<{ message?: string}>;
+
+            const statusCode = axiosError.response?.status;
+            
+            const isValidationError = statusCode === 400;
+            const isServerError = statusCode && statusCode >= 500;
+
+            setState({
+                data: null,
+                status: isValidationError ? 'validationError' : isServerError ? 'serverError' : 'idle',
+                error: axiosError
+            });
         }
     }
     return { ...state, makeRequest }
