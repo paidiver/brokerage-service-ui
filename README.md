@@ -67,7 +67,7 @@ For example, for an endpoint returning a list of images: define the `Image` inte
 **Example with query parameters and a typed response:**
 
 ```ts
-const results = await apiRequest<SearchResponse>({
+const results = await apiRequest<TaxaBulkResponse>({
   method: 'GET',
   url: '/taxa/ajax_by_name_part/crab',
   queryParams: {
