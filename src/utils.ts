@@ -22,9 +22,3 @@ export const formatDatetime = (datetimeString: string, localFormat = true): stri
   }
   return dayjs.utc(datetimeString).format('D MMM YYYY h:mma')
 }
-
-export const API_BASE_URL = process.env.NEXT_PUBLIC_BROKERAGE_SERVICE_API ?? 'https://brokerage-service.paidiver.site';
-
-export function apiUrl(path: string): string {
-  return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
-}
