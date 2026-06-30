@@ -87,6 +87,75 @@ await apiRequest<AnnotaionsSubmissionResponse>({
 });
 ```
 
+### Using the `useApiRequest` Hook (Recommended for Components)
+
+While `apiRequest()` is the underlying function that performs the HTTP call, most components should use the `useApiRequest()` hook instead. It wraps `apiRequest()` and manages loading, success, empty, validation error, and server error states automatically, so components don't need to manage this state manually with `useState`/`useEffect`.
+
+**Basic usage:**
+
+```tsx
+'use client';
+import { useApiRequest } from '../../hooks/useApiRequest';
+import { SourcesInfoResponse } from '../models/responseModels'
+
+export default function SourcesList() {
+  const { data, status, error, makeRequest } = useApiRequest<SourcesInfoResponse>();
+
+  const fetchSources = () => {
+    makeRequest({
+      method: 'GET',
+      url: '/sources',
+    });
+  };
+
+  return (
+    <div>
+      <button onClick={fetchSources}>Load Sources</button>
+
+      {status === 'loading' && <p>Loading...</p>}
+      {status === 'empty' && <p>No sources found.</p>}
+      {status === 'validationError' && <p>Error: {error}</p>}
+      {status === 'serverError' && <p>Error: {error}</p>}
+      {status === 'success' && (
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      )}
+    </div>
+  );
+}
+```
+
+**What the hook returns:**
+
+| Property | Description |
+|---|---|
+| `data` | The response data, or `null` if not yet loaded or on error. |
+| `status` | One of `'idle'`, `'loading'`, `'success'`, `'empty'`, `'validationError'`, `'serverError'`. |
+| `error` | A human-readable error message, or `null` if no error. |
+| `makeRequest` | Function to trigger the request. Accepts the same options as `apiRequest()` (`method`, `url`, `queryParams`, `data`, etc.), plus an optional `isEmpty` override (see below). |
+
+**Detecting empty responses:**
+
+The hook automatically checks common response shapes (a top-level array, a `results` array, a `sources` array, or a `count` of `0`) to determine the `empty` status. For response shapes that don't match these patterns, pass a custom `isEmpty` function:
+
+```tsx
+makeRequest({
+  method: 'GET',
+  url: '/taxa/ajax_by_name_part/crab',
+  queryParams: { sources: ['bodc', 'jncc'] },
+  isEmpty: (data) => !data.ok || !data.data || data.data.length === 0,
+});
+```
+
+**Running a request on page load:**
+
+To fetch data automatically when a component mounts, call `makeRequest` inside a `useEffect`:
+
+```tsx
+useEffect(() => {
+  makeRequest({ method: 'GET', url: '/sources' });
+}, [makeRequest]);
+```
+
 ## Deployment
 
 Deployment is handled automatically using a GitHub Actions workflow that runs on every push to the `main` branch.
