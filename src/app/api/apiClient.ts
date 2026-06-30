@@ -8,13 +8,16 @@ const apiClient = axios.create({
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
+    },
+    paramsSerializer: {
+        indexes: null
     }
 })
 
 interface RequestOptions extends Omit<AxiosRequestConfig, 'method' | 'url'> {
     method: AxiosRequestConfig['method'];
     url: string;
-    queryParams?: Record<string, string | number | boolean>;
+    queryParams?: Record<string, string | number | boolean | string[] | number[] | boolean[]>;
     data?: unknown;
     responseType?: 'json' | 'blob' | 'arraybuffer' | 'text';
 }
