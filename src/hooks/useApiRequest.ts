@@ -13,23 +13,23 @@ interface UseApiRequestState<T> {
 
 // Helper to check if the response data is empty based on the structure of the data
 function checkIfEmpty(data: unknown): boolean {
-  if (!data) return true;
+  if (!data) return true
 
-  if (Array.isArray(data)) return data.length === 0;
+  if (Array.isArray(data)) return data.length === 0
 
   if (typeof data === 'object') {
-    if ('count' in data && data.count === 0) return true;
+    if ('count' in data && data.count === 0) return true
     
     if ('results' in data) {
       if (Array.isArray(data.results)) return data.results.length === 0;      
     }
 
     if ('sources' in data && Array.isArray(data.sources)) {
-      return data.sources.length === 0;
+      return data.sources.length === 0
     }
   }
 
-  return false;
+  return false
 }
 
 export function useApiRequest<T>() {
@@ -41,25 +41,25 @@ export function useApiRequest<T>() {
 
     const makeRequest = useCallback(async (requestOptions: RequestOptions & { isEmpty?: (data: T) => boolean }) => {
         setState({ data: null, status: 'loading', error: null })
-        const { isEmpty, ...requestOptionsParams } = requestOptions;
+        const { isEmpty, ...requestOptionsParams } = requestOptions
 
         try {
             const responseData = await apiRequest<T>(requestOptionsParams)
-            const isDataEmpty = isEmpty ? isEmpty(responseData) : checkIfEmpty(responseData);
+            const isDataEmpty = isEmpty ? isEmpty(responseData) : checkIfEmpty(responseData)
 
             setState({
                 data: responseData,
                 status: isDataEmpty ? 'empty' : 'success',
-                error: isDataEmpty ? 'No data returned from API' : null
+                error: null
             })
         } catch (error: AxiosError | unknown) {
-            const axiosError = error as AxiosError<{ message?: string}>;
+            const axiosError = error as AxiosError<{ message?: string}>
 
-            const statusCode = axiosError.response?.status;
+            const statusCode = axiosError.response?.status
             
             setState({
                 data: null,
-                status: statusCode === 422 ? 'validationError' : statusCode && statusCode >= 500 ? 'serverError' : 'idle',
+                status: statusCode === 422 ? 'validationError' : 'serverError',
                 error: 
                     statusCode === 422
                     ? axiosError.response?.data?.message ?? 'Invalid request parameters.'
