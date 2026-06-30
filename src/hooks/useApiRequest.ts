@@ -11,7 +11,7 @@ interface UseApiRequestState<T> {
     error: string | null
 }
 
-
+// Helper to check if the response data is empty based on the structure of the data
 function checkIfEmpty(data: unknown): boolean {
   if (!data) return true;
 
@@ -39,12 +39,13 @@ export function useApiRequest<T>() {
         error: null
     })
 
-    const makeRequest = useCallback(async (requestOptions: RequestOptions) => {
+    const makeRequest = useCallback(async (requestOptions: RequestOptions & { isEmpty?: (data: T) => boolean }) => {
         setState({ data: null, status: 'loading', error: null })
+        const { isEmpty, ...requestOptionsParams } = requestOptions;
 
         try {
-            const responseData = await apiRequest<T>(requestOptions)
-            const isDataEmpty = checkIfEmpty(responseData);
+            const responseData = await apiRequest<T>(requestOptionsParams)
+            const isDataEmpty = isEmpty ? isEmpty(responseData) : checkIfEmpty(responseData);
 
             setState({
                 data: responseData,
