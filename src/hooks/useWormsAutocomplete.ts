@@ -1,18 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SourcesInfoResponse } from 'src/models/responseModels';
-
-import { apiRequest } from '../api/apiClient';
+import { apiRequest } from 'src/api/apiClient';
+import { TaxonWormsLikeItem, TaxonWormsLikeResponse } from 'src/models/taxanomies';
 
 interface UseWormsAutocompleteReturn {
-  wormsOptions: WormsResult[];
+  wormsOptions: TaxonWormsLikeItem[];
   wormsLoading: boolean;
   clearWormsOptions: () => void;
 }
 
 export function useWormsAutocomplete(searchInput: string): UseWormsAutocompleteReturn {
-  const [wormsOptions, setWormsOptions] = useState<WormsResult[]>([]);
+  const [wormsOptions, setWormsOptions] = useState<TaxonWormsLikeItem[]>([]);
   const [wormsLoading, setWormsLoading] = useState(false);
 
   useEffect(() => {
@@ -29,15 +28,13 @@ export function useWormsAutocomplete(searchInput: string): UseWormsAutocompleteR
       try {
         setWormsLoading(true);
 
-        const results = async () =>
-          await apiRequest<SourcesInfoResponse>({
-            method: 'GET',
-            url: '/sources'
-          });
-        const results = await fetchWormsByNamePart(term);
+        const results = await apiRequest<TaxonWormsLikeResponse>({
+          method: 'GET',
+          url: `/taxa/ajax_by_name_part/${term}`
+        });
 
         if (isActive) {
-          setWormsOptions(results);
+          setWormsOptions(results.results);
         }
       } catch (error) {
         console.error('Failed to fetch WoRMS options:', error);

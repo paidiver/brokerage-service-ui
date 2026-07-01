@@ -9,10 +9,9 @@ export default function Home() {
   const {
     searchInput,
     setSearchInput,
-    searchTerms,
     includeDescendants,
     setIncludeDescendants,
-    chipLabel,
+    chipLabels,
     selectWormsOption,
     removeSearchTerm,
     handleSearchInputKeyDown,
@@ -27,8 +26,7 @@ export default function Home() {
         searchInput={searchInput}
         onSearchInputChange={setSearchInput}
         onSearchInputKeyDown={handleSearchInputKeyDown}
-        chipLabel={chipLabel}
-        hasSearchTerm={Boolean(searchTerms)}
+        chipLabels={chipLabels}
         onRemoveSearchTerm={removeSearchTerm}
         includeDescendants={includeDescendants}
         onIncludeDescendantsChange={setIncludeDescendants}
