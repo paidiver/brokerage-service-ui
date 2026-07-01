@@ -11,7 +11,7 @@ const SearchBar = () => {
             </Box>
             <Box flex={1} display="flex" flexDirection="row" alignItems="center" gap="1rem">
                 <p>{"{{ search input component }}"}</p>
-                <Button variant="contained" color="primary">
+                <Button variant="contained" color="primary" sx={{ borderRadius: '8px', height: '35px', width: '80px' }}>
                     Search
                 </Button>
             </Box>
