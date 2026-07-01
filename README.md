@@ -216,6 +216,37 @@ Then open:
 http://localhost:3000
 ```
 
+### 4. Run tests
+
+Unit tests are written using [Vitest](https://vitest.dev/) with the following libraries:
+
+- **`@testing-library/react`** — renders React hooks in a test environment
+- **`axios-mock-adapter`** — intercepts and mocks HTTP requests made via axios, without hitting a real backend
+
+#### Test structure
+
+Tests are co-located with the source files they cover:
+
+```
+src/
+  app/
+    api/
+      apiClient.ts
+  hooks/
+    useApiRequest.ts
+  tests/
+    apiClient.test.ts         ← tests for apiRequest()
+    useApiRequest.test.ts     ← tests for the useApiRequest hook
+
+```
+
+#### Running tests
+
+Run all tests:
+```bash
+npm run test
+```
+
 ## Acknowledgements
 
 This project was supported by the UK Natural Environment Research Council (NERC) through the _Tools for automating image analysis for biodiversity monitoring (AIAB)_ Funding Opportunity, reference code **UKRI052**.
