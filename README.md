@@ -166,7 +166,7 @@ Because this site is deployed as a static brokerage-service-ui on GitHub Pages:
 - it can only interact with backend services that are publicly reachable from the browser
 
 **Required Cnfiguration:**
-- Repository Variable `NEXT_PUBLIC_BROKERAGE_SERVICE_API` : The base url for backend API (e.g. `https://brokerage-service.paidiver.site`)
+- Repository Variable `NEXT_PUBLIC_BROKERAGE_SERVICE_API` : The base url for backend API (e.g. `https://brokerage-service.paidiver.site`). To update the variable value in the repository go to Settings > Secrets and variables > Actions >Variables
 
 ## Smoke checks after deployment
 
