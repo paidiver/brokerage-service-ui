@@ -1,8 +1,12 @@
 'use client';
+import SearchBar from '../../components/search/SearchBar';
 
 export default function Home() {
 
   return (
-    <div> Test Page </div>
+    <div>  
+      <SearchBar />
+
+    </div>
   );
 }
