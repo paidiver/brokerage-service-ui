@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios'
 import { useCallback,useState } from 'react'
 
-import { apiRequest, RequestOptions } from '../app/api/apiClient'
+import { apiRequest, RequestOptions } from '../api/apiClient'
 
 
 type RequestStatus = 'idle' | 'loading' | 'success' | 'validationError' | 'serverError' | 'empty'

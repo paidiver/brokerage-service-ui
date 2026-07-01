@@ -1,6 +1,6 @@
-import { AnnotationRecord, AnnotationSummary } from './annotations'
-import { SourceConfig, SourceInfo } from './sources'
-import { TaxonWormsLike } from './taxanomies'
+import { AnnotationRecord, AnnotationSummary } from '../models/annotations'
+import { SourceConfig, SourceInfo } from '../models/sources'
+import { TaxonWormsLike } from '../models/taxanomies'
 
 export interface PaginatedResponse<T> {
     count: number

@@ -27,8 +27,8 @@ All API calls must go through the `apiRequest()` function in [apiClient.ts](/src
 **Example:**
 
 ```ts
-import { apiRequest } from '../api/apiClient'
-import { SourcesInfoResponse } from '../models/responseModels'
+import { apiRequest } from '../../api/apiClient'
+import { SourcesInfoResponse } from '../../types/responseModels'
 
 const sourceInfo = async () => await apiRequest<SourcesInfoResponse>({
   method: 'GET',
@@ -44,11 +44,11 @@ The API base URL is controlled by the `NEXT_PUBLIC_BROKERAGE_SERVICE_API` enviro
 
 ### Response Types
 
-Response shapes are defined as interfaces in [responseModels.ts](/src/app/models/responseModels.ts).
+Response shapes are defined as interfaces in [apiResponseTypes.ts](/src/types/apiResponseTypes.ts).
 
 When adding a new endpoint:
-1. Create an entity-specific interface in `/src/app/models/{entity_name}.ts` (e.g. `images.ts` for an image entity).
-2. Add a corresponding response wrapper interface in [responseModels.ts](/src/app/models/responseModels.ts) that describes the shape actually returned by the endpoint.
+1. Create an entity-specific interface in `/src/models/{entity_name}.ts` (e.g. `images.ts` for an image entity).
+2. Add a corresponding response wrapper interface in [apiResponseTypes.ts](/src/types/apiResponseTypes.ts) that describes the shape actually returned by the endpoint.
 
 For example, for an endpoint returning a list of images: define the `Image` interface in `models/images.ts`, then add an `ImagesResponse` interface in `responseModels.ts` that wraps it (e.g. as an array or with pagination metadata, depending on the endpoint).
 
@@ -96,7 +96,7 @@ While `apiRequest()` is the underlying function that performs the HTTP call, mos
 ```tsx
 'use client';
 import { useApiRequest } from '../../hooks/useApiRequest';
-import { SourcesInfoResponse } from '../models/responseModels'
+import { SourcesInfoResponse } from '../../types/apiResponseTypes.ts'
 
 export default function SourcesList() {
   const { data, status, error, makeRequest } = useApiRequest<SourcesInfoResponse>();
