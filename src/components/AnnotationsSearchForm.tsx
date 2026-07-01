@@ -1,5 +1,6 @@
 'use client';
 
+import TuneIcon from '@mui/icons-material/Tune';
 import {
   Autocomplete,
   Box,
@@ -11,7 +12,6 @@ import {
   Typography
 } from '@mui/material';
 import { KeyboardEvent } from 'react';
-import { WormsResult } from 'src/types/annotation';
 
 interface AnnotationsSearchFormProps {
   searchInput: string;
@@ -24,6 +24,7 @@ interface AnnotationsSearchFormProps {
 
   includeDescendants: boolean;
   onIncludeDescendantsChange: (value: boolean) => void;
+  additionalFilters?: React.ReactNode;
 
   wormsOptions: WormsResult[];
   wormsLoading: boolean;
@@ -41,6 +42,7 @@ export function AnnotationsSearchForm({
   onRemoveSearchTerm,
   includeDescendants,
   onIncludeDescendantsChange,
+  additionalFilters,
   wormsOptions,
   wormsLoading,
   onSelectWormsOption,
@@ -64,7 +66,11 @@ export function AnnotationsSearchForm({
           alignItems: 'center'
         }}
       >
-      <Box
+        <Button variant="contained" color="primary" type="submit">
+          <TuneIcon sx={{ mr: 1 }} />
+        </Button>
+
+        <Box
           sx={{
             flex: 1,
             minWidth: 320,
@@ -73,84 +79,69 @@ export function AnnotationsSearchForm({
             py: 1
           }}
         >
+          {hasSearchTerm && (
+            <Chip
+              label={chipLabel}
+              onDelete={onRemoveSearchTerm}
+              color="primary"
+              variant="outlined"
+            />
+          )}
 
-          {/* <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: 1
-            }}
-          > */}
-            {hasSearchTerm && (
-              <Chip
-                label={chipLabel}
-                onDelete={onRemoveSearchTerm}
-                color="primary"
-                variant="outlined"
-              />
-            )}
-
-            {!hasSearchTerm && (
-              <Box sx={{ flex: 1, minWidth: 180 }}>
-                <Autocomplete
-                  fullWidth
-                  options={wormsOptions}
-                  loading={wormsLoading}
-                  inputValue={searchInput}
-                  value={null}
-                  openOnFocus
-                  filterOptions={options => options}
-                  getOptionLabel={option => option.scientificname ?? ''}
-                  isOptionEqualToValue={(option, value) =>
-                    option.AphiaID === value.AphiaID
+          {!hasSearchTerm && (
+            <Box sx={{ flex: 1, minWidth: 180 }}>
+              <Autocomplete
+                fullWidth
+                options={wormsOptions}
+                loading={wormsLoading}
+                inputValue={searchInput}
+                value={null}
+                openOnFocus
+                filterOptions={options => options}
+                getOptionLabel={option => option.scientificname ?? ''}
+                isOptionEqualToValue={(option, value) => option.AphiaID === value.AphiaID}
+                onInputChange={(_, value) => {
+                  onSearchInputChange(value);
+                }}
+                onChange={(_, selectedItem) => {
+                  if (selectedItem) {
+                    onSelectWormsOption(selectedItem);
                   }
-                  onInputChange={(_, value) => {
-                    onSearchInputChange(value);
-                  }}
-                  onChange={(_, selectedItem) => {
-                    if (selectedItem) {
-                      onSelectWormsOption(selectedItem);
-                    }
-                  }}
-                  renderInput={params => (
-                    <TextField
-                      {...params}
-                      placeholder="Scientific or Common name"
-                      aria-label="Search taxa"
-                      onKeyDown={onSearchInputKeyDown}
-                      size="small"
-                      variant="outlined"
-                      slotProps={{
-                        input: {
-                          ...params.InputProps,
-                          endAdornment: (
-                            <>
-                              {wormsLoading && (
-                                <CircularProgress color="inherit" size={20} />
-                              )}
-                              {params.InputProps.endAdornment}
-                            </>
-                          )
-                        }
-                      }}
-                    />
-                  )}
-                  renderOption={(props, item) => (
-                    <Box component="li" {...props} key={item.AphiaID}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="body2">
-                          {item.scientificname}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          AphiaID: {item.AphiaID}, Rank: {item.rank}
-                        </Typography>
-                      </Box>
+                }}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    placeholder="Scientific or Common name"
+                    aria-label="Search taxa"
+                    onKeyDown={onSearchInputKeyDown}
+                    size="small"
+                    variant="outlined"
+                    slotProps={{
+                      input: {
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {wormsLoading && <CircularProgress color="inherit" size={20} />}
+                            {params.InputProps.endAdornment}
+                          </>
+                        )
+                      }
+                    }}
+                  />
+                )}
+                renderOption={(props, item) => (
+                  <Box component="li" {...props} key={item.AphiaID}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                      <Typography variant="body2">{item.scientificname}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        AphiaID: {item.AphiaID}, Rank: {item.rank}
+                      </Typography>
                     </Box>
-                  )}
-                />
-              </Box>
-            )}
+                  </Box>
+                )}
+              />
+            </Box>
+          )}
         </Box>
 
         <Button variant="contained" color="primary" type="submit">

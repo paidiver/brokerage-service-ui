@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchWormsByNamePart } from 'src/hooks/actions/wormsActions';
-import { WormsResult } from 'src/types/annotation';
+import { SourcesInfoResponse } from 'src/models/responseModels';
+
+import { apiRequest } from '../api/apiClient';
 
 interface UseWormsAutocompleteReturn {
   wormsOptions: WormsResult[];
@@ -27,6 +28,12 @@ export function useWormsAutocomplete(searchInput: string): UseWormsAutocompleteR
 
       try {
         setWormsLoading(true);
+
+        const results = async () =>
+          await apiRequest<SourcesInfoResponse>({
+            method: 'GET',
+            url: '/sources'
+          });
         const results = await fetchWormsByNamePart(term);
 
         if (isActive) {
