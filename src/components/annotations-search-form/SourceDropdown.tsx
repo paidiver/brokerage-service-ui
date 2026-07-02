@@ -4,9 +4,9 @@ import Autocomplete from '@mui/material/Autocomplete'
 import Box from '@mui/material/Box'
 import Checkbox from '@mui/material/Checkbox'
 import Divider from '@mui/material/Divider'
-import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
+import { FormTextField, mergeFieldSx } from 'src/components/annotations-search-form/FormFields'
 
 import { SourcesInfoResponse } from '../../api/types'
 import { useApiRequest } from '../../hooks/useApiRequest'
@@ -17,6 +17,7 @@ const checkedIcon = <CheckBoxIcon fontSize="small" />
 const ALL_OPTION = { label: 'ALL', value: 'all', status: 'ok' }
 const POLL_INTERVAL_MS = 10 * 60 * 1000
 const MAX_VISIBLE_LABELS = 1
+const sourceDropdownSx = { minWidth: 160, flex: '0 0 160px' }
 
 type SourceOption = { label: string; value: string; status: string }
 
@@ -205,9 +206,9 @@ export const SourceDropdown = ({ selectedSources, onSelectedSourcesChange }: Sou
                 );
             }}
             renderInput={(params) => (
-                <TextField {...params} label="Source" size="small" />
+                <FormTextField {...params} label="Source" size="small" sx={sourceDropdownSx} />
             )}
-            sx={{ minWidth: 160 }}
+            sx={mergeFieldSx(sourceDropdownSx)}
         />
     );
 };

@@ -1,4 +1,4 @@
-export interface SearchParams {
+export interface SearchParams extends AdditionalFilters {
   page_size: number;
   page: number;
   aphia_ids?: number[];
