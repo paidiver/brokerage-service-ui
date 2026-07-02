@@ -1,5 +1,3 @@
-import { PaginatedResponse } from './pagination';
-
 export interface AnnotationSummary {
   n_annotations: number;
   n_images: number;
@@ -28,10 +26,3 @@ export interface AnnotationRecord {
   image_set_uuid: string;
   image_set_name: string;
 }
-
-export interface AnnotationResults {
-  summary: AnnotationSummary;
-  annotations: AnnotationRecord[];
-}
-
-export type AnnotationsSearchResponse = PaginatedResponse<AnnotationResults>;

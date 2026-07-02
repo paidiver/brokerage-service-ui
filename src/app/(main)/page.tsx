@@ -5,7 +5,6 @@ import { useAnnotationsSearch } from 'src/hooks/useAnnotationsSearch';
 import { useWormsAutocomplete } from 'src/hooks/useWormsAutocomplete';
 
 export default function Home() {
-
   const {
     searchInput,
     setSearchInput,
@@ -15,7 +14,7 @@ export default function Home() {
     selectWormsOption,
     removeSearchTerm,
     handleSearchInputKeyDown,
-    submitSearch,
+    submitSearch
   } = useAnnotationsSearch();
 
   const { wormsOptions, wormsLoading } = useWormsAutocomplete(searchInput);
@@ -35,7 +34,6 @@ export default function Home() {
         onSelectWormsOption={selectWormsOption}
         onSubmit={submitSearch}
       />
-
     </div>
   );
 }

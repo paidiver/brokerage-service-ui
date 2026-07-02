@@ -2,11 +2,8 @@
 
 import { KeyboardEvent, useMemo, useState } from 'react';
 import { apiRequest } from 'src/api/apiClient';
-import {
-  AnnotationRecord,
-  AnnotationsSearchResponse,
-  AnnotationSummary
-} from 'src/models/annotations';
+import { AnnotationsSearchResponse } from 'src/api/types';
+import { AnnotationRecord, AnnotationSummary } from 'src/models/annotations';
 import { SearchParams, SearchTerms } from 'src/models/search';
 import { TaxonWormsLikeItem } from 'src/models/taxanomies';
 
@@ -72,7 +69,7 @@ function buildSearchParams(
 }
 
 export function useAnnotationsSearch() {
-  const [submissions, setSubmissions] = useState<AnnotationRecord[]>([]);
+  const [annotations, setAnnotations] = useState<AnnotationRecord[]>([]);
   const [count, setCount] = useState(0);
   const [summary, setSummary] = useState<AnnotationSummary | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,11 +82,11 @@ export function useAnnotationsSearch() {
   const [searchTerms, setSearchTerms] = useState<SearchTerms[]>([]);
   const [includeDescendants, setIncludeDescendants] = useState(false);
 
-  const hasResults = useMemo(() => submissions.length > 0, [submissions]);
+  const hasResults = useMemo(() => annotations.length > 0, [annotations]);
   const chipLabels = useMemo(() => searchTerms.map(getSearchChipLabel), [searchTerms]);
 
   const resetResults = () => {
-    setSubmissions([]);
+    setAnnotations([]);
     setSummary(null);
     setCount(0);
     setNextPage(null);
@@ -124,10 +121,10 @@ export function useAnnotationsSearch() {
 
       setCount(data.count);
       setSummary(data.results.summary);
-      setSubmissions(data.results.annotations);
+      setAnnotations(data.results.annotations);
       setNextPage(data.next ? page + 1 : null);
     } catch (error) {
-      console.error('Failed to load grouped annotations:', error);
+      console.error('Failed to load annotations:', error);
 
       if (page === 1) {
         resetResults();
@@ -174,9 +171,7 @@ export function useAnnotationsSearch() {
   };
 
   const removeSearchTerm = (indexToRemove: number) => {
-    setSearchTerms(currentTerms =>
-      currentTerms.filter((_, index) => index !== indexToRemove)
-    );
+    setSearchTerms(currentTerms => currentTerms.filter((_, index) => index !== indexToRemove));
   };
 
   const handleSearchInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -228,20 +223,18 @@ export function useAnnotationsSearch() {
   };
 
   return {
-    submissions,
+    annotations,
     count,
     summary,
     isLoading,
     nextPage,
     hasResults,
-
     searchInput,
     setSearchInput,
     searchTerms,
     includeDescendants,
     setIncludeDescendants,
     chipLabels,
-
     addNamePartSearch,
     selectWormsOption,
     removeSearchTerm,

@@ -1,18 +1,12 @@
 'use client';
 
-import TuneIcon from '@mui/icons-material/Tune';
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Switch,
-  TextField,
-  Typography
-} from '@mui/material';
-import { KeyboardEvent } from 'react';
-import { TaxonWormsLikeItem } from 'src/models/taxanomies';
+import { Box } from '@mui/material';
+import type { KeyboardEvent } from 'react';
+import { IncludeDescendantsToggle } from 'src/components/annotations-search-form/IncludeDescendantsToggle';
+import { SearchActionButton } from 'src/components/annotations-search-form/SearchActionButton';
+import { SourceSelect } from 'src/components/annotations-search-form/SourceSelect';
+import { TaxonAutocompleteField } from 'src/components/annotations-search-form/TaxonAutocompleteField';
+import type { TaxonWormsLikeItem } from 'src/models/taxanomies';
 
 interface AnnotationsSearchFormProps {
   searchInput: string;
@@ -48,7 +42,8 @@ export function AnnotationsSearchForm({
   const buttonSx = {
     bgcolor: '#2C2C2C',
     '&:hover': {
-      bgcolor: '#1F1F1F'
+      bgcolor: '#1F1F1F',
+      opacity: 0.9
     }
   };
 
@@ -70,120 +65,23 @@ export function AnnotationsSearchForm({
           alignItems: 'center'
         }}
       >
-        <Button variant="contained" type="submit" sx={buttonSx}>
-          <TuneIcon sx={{ mr: 1 }} />
-        </Button>
-
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 320,
-            display: 'flex',
-            gap: 1,
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            borderRadius: 2,
-            px: 1.5,
-            py: 1
-          }}
-        >
-          {chipLabels.map((chipLabel, index) => (
-            <Chip
-              key={`${chipLabel}-${index}`}
-              label={chipLabel}
-              onDelete={() => onRemoveSearchTerm(index)}
-              color="primary"
-              variant="outlined"
-            />
-          ))}
-
-          <Box sx={{ flex: '1 1 220px', minWidth: 180 }}>
-            <Autocomplete<TaxonWormsLikeItem, false, false, false>
-              fullWidth
-              options={wormsOptions}
-              loading={wormsLoading}
-              inputValue={searchInput}
-              value={null}
-              openOnFocus
-              filterOptions={options => options}
-              getOptionLabel={option => option.scientificname ?? ''}
-              isOptionEqualToValue={(option, value) => option.AphiaID === value.AphiaID}
-              onInputChange={(_, value) => {
-                onSearchInputChange(value);
-              }}
-              onChange={(_, selectedItem) => {
-                if (selectedItem) {
-                  onSelectWormsOption(selectedItem);
-                }
-              }}
-              renderInput={params => {
-                const inputSlotProps = params.slotProps?.input ?? {};
-                const htmlInputSlotProps = params.slotProps?.htmlInput ?? {};
-
-                return (
-                  <TextField
-                    {...params}
-                    placeholder="Scientific or common name"
-                    size="small"
-                    variant="outlined"
-                    slotProps={{
-                      ...params.slotProps,
-                      input: {
-                        ...inputSlotProps,
-                        endAdornment: (
-                          <>
-                            {wormsLoading && <CircularProgress color="inherit" size={20} />}
-                            {inputSlotProps.endAdornment}
-                          </>
-                        )
-                      },
-                      htmlInput: {
-                        ...htmlInputSlotProps,
-                        'aria-label': 'Search taxa',
-                        onKeyDown: onSearchInputKeyDown
-                      }
-                    }}
-                  />
-                );
-              }}
-              renderOption={(props, item) => {
-                const { key, ...optionProps } = props;
-
-                return (
-                  <Box component="li" key={key} {...optionProps}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                      <Typography variant="body2">{item.scientificname}</Typography>
-
-                      <Typography variant="caption" color="text.secondary">
-                        AphiaID: {item.AphiaID}, Rank: {item.rank}
-                      </Typography>
-                    </Box>
-                  </Box>
-                );
-              }}
-            />
-          </Box>
-        </Box>
-
-        <Button variant="contained" type="submit" sx={buttonSx}>
-          Search
-        </Button>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Switch
-            checked={includeDescendants}
-            onChange={e => onIncludeDescendantsChange(e.target.checked)}
-          />
-
-          <Box>
-            <Typography variant="body2" sx={{ lineHeight: 1.1 }}>
-              include
-            </Typography>
-            <Typography variant="body2" sx={{ lineHeight: 1.1 }}>
-              children
-            </Typography>
-          </Box>
-        </Box>
+        <SearchActionButton ariaLabel="Apply filters" iconOnly sx={buttonSx} />
+        <TaxonAutocompleteField
+          chipLabels={chipLabels}
+          inputValue={searchInput}
+          loading={wormsLoading}
+          options={wormsOptions}
+          onInputChange={onSearchInputChange}
+          onInputKeyDown={onSearchInputKeyDown}
+          onRemoveSearchTerm={onRemoveSearchTerm}
+          onSelectOption={onSelectWormsOption}
+        />
+        <SearchActionButton sx={{ ...buttonSx, color: 'white' }}>Search</SearchActionButton>
+        <IncludeDescendantsToggle
+          checked={includeDescendants}
+          onChange={onIncludeDescendantsChange}
+        />
+        <SourceSelect />
       </Box>
     </Box>
   );
