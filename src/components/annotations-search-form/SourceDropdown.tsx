@@ -8,13 +8,15 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 
+import { SourcesInfoResponse } from '../../api/types'
 import { useApiRequest } from '../../hooks/useApiRequest'
-import { SourcesInfoResponse } from '../../types/apiResponseTypes'
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />
 const checkedIcon = <CheckBoxIcon fontSize="small" />
 
 const ALL_OPTION = { label: 'ALL', value: 'all', status: 'ok' }
+const POLL_INTERVAL_MS = 10 * 60 * 1000
+const MAX_VISIBLE_LABELS = 1
 
 type SourceOption = { label: string; value: string; status: string }
 
@@ -33,27 +35,80 @@ const StatusDot = ({ status }: { status: string }) => (
     />
 );
 
+const AllOptionItem = ({
+    props,
+    allSelected,
+    someSelected,
+    onToggle,
+}: {
+    props: React.HTMLAttributes<HTMLLIElement>;
+    allSelected: boolean;
+    someSelected: boolean;
+    onToggle: () => void;
+}) => {
+    const { key, ...optionProps } = props as { key: React.Key } & React.HTMLAttributes<HTMLLIElement>;
+    return (
+        <Box key={key}>
+            <li {...optionProps} onClick={onToggle} style={{ cursor: 'pointer' }}>
+                <Checkbox
+                    icon={icon}
+                    checkedIcon={checkedIcon}
+                    style={{ marginRight: 8 }}
+                    checked={allSelected}
+                    indeterminate={someSelected && !allSelected}
+                />
+                <Typography  sx={{ fontWeight: 'bold' }}>ALL</Typography>
+            </li>
+            <Divider />
+        </Box>
+    );
+};
+
+const SourceOptionItem = ({
+    props,
+    option,
+    selected,
+}: {
+    props: React.HTMLAttributes<HTMLLIElement>;
+    option: SourceOption;
+    selected: boolean;
+}) => {
+    const { key, ...optionProps } = props as { key: React.Key } & React.HTMLAttributes<HTMLLIElement>;
+    const isDisabled = option.status !== 'ok';
+
+    return (
+        <li key={key} {...optionProps}>
+            <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8 }}
+                checked={selected}
+                disabled={isDisabled}
+            />
+            <Typography
+                sx={{ flex: 1, color: isDisabled ? 'text.disabled' : 'text.primary' }}
+            >
+                {option.label}
+            </Typography>
+            <StatusDot status={option.status} />
+        </li>
+    );
+};
+
 export const SourceDropdown = () => {
-    const { data, error, makeRequest } = useApiRequest<SourcesInfoResponse>();
+    const { data, makeRequest } = useApiRequest<SourcesInfoResponse>();
     const [options, setOptions] = useState<SourceOption[]>([]);
     const [selectedOptions, setSelectedOptions] = useState<SourceOption[]>([]);
 
-    const fetchSources = () => {
-        makeRequest({ method: 'GET', url: '/sources' });
-        if (error) {
-            console.error('Error fetching sources:', error);
-        }
-    }
-
     useEffect(() => {
-        fetchSources();
+        makeRequest({ method: 'GET', url: '/sources' })
 
         const interval = setInterval(() => {
-            fetchSources();
-        }, 10 * 60 * 1000);
+            makeRequest({ method: 'GET', url: '/sources' })
+        }, POLL_INTERVAL_MS)
 
-        return () => clearInterval(interval);
-    }, [fetchSources]);
+        return () => clearInterval(interval)
+    }, [makeRequest])
 
     useEffect(() => {
         if (data?.sources) {
@@ -90,66 +145,6 @@ export const SourceDropdown = () => {
 
     const autocompleteOptions = [ALL_OPTION, ...options];
 
-    const AllOptionItem = ({
-        props,
-        allSelected,
-        someSelected,
-        onToggle,
-    }: {
-        props: React.HTMLAttributes<HTMLLIElement>;
-        allSelected: boolean;
-        someSelected: boolean;
-        onToggle: () => void;
-    }) => {
-        const { key, ...optionProps } = props as { key: React.Key } & React.HTMLAttributes<HTMLLIElement>;
-        return (
-            <Box key={key}>
-                <li {...optionProps} onClick={onToggle} style={{ cursor: 'pointer' }}>
-                    <Checkbox
-                        icon={icon}
-                        checkedIcon={checkedIcon}
-                        style={{ marginRight: 8 }}
-                        checked={allSelected}
-                        indeterminate={someSelected && !allSelected}
-                    />
-                    <Typography fontWeight="bold">ALL</Typography>
-                </li>
-                <Divider />
-            </Box>
-        );
-    };
-
-    const SourceOptionItem = ({
-            props,
-            option,
-            selected,
-        }: {
-            props: React.HTMLAttributes<HTMLLIElement>;
-            option: SourceOption;
-            selected: boolean;
-        }) => {
-            const { key, ...optionProps } = props as { key: React.Key } & React.HTMLAttributes<HTMLLIElement>;
-            const isDisabled = option.status !== 'ok';
-
-            return (
-                <li key={key} {...optionProps}>
-                    <Checkbox
-                        icon={icon}
-                        checkedIcon={checkedIcon}
-                        style={{ marginRight: 8 }}
-                        checked={selected}
-                        disabled={isDisabled}
-                    />
-                    <Typography
-                        sx={{ flex: 1, color: isDisabled ? 'text.disabled' : 'text.primary' }}
-                    >
-                        {option.label}
-                    </Typography>
-                    <StatusDot status={option.status} />
-                </li>
-            );
-        };
-
     return (
         <Autocomplete
             multiple
@@ -160,7 +155,24 @@ export const SourceDropdown = () => {
             getOptionLabel={(option) => option.label}
             getOptionDisabled={(option) => option.value !== 'all' && option.status !== 'ok'}
             isOptionEqualToValue={(option, value) => option.value === value.value}
-            renderValue={() => null}
+            renderValue={(selected) => {
+                const realSelected = selected.filter((o) => o.value !== 'all');
+                
+                const displayText = () => {
+                    if (realSelected.length === 0) return '';
+                    if (realSelected.length === enabledOptions.length) return 'All';
+                    if (realSelected.length <= MAX_VISIBLE_LABELS) {
+                        return realSelected.map((o) => o.label).join(', ');
+                    }
+                    return `${realSelected[0].label} +${realSelected.length - MAX_VISIBLE_LABELS} more`;
+                };
+
+                return (
+                    <Typography variant="body2" sx={{ px: 0.5, whiteSpace: 'nowrap' }}>
+                        {displayText()}
+                    </Typography>
+                );
+            }}
             renderOption={(props, option, { selected }) => {
                 if (option.value === 'all') {
                     return (
@@ -186,7 +198,7 @@ export const SourceDropdown = () => {
             renderInput={(params) => (
                 <TextField {...params} label="Source" size="small" />
             )}
-            sx={{ minWidth: 180 }}
+            sx={{ minWidth: 160 }}
         />
     );
 };
