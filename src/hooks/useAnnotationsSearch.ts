@@ -4,7 +4,7 @@ import { KeyboardEvent, useMemo, useState } from 'react';
 import { apiRequest } from 'src/api/apiClient';
 import { AnnotationsSearchResponse } from 'src/api/types';
 import { AnnotationRecord, AnnotationSummary } from 'src/models/annotations';
-import { SearchParams, SearchTerms } from 'src/models/search';
+import { AdditionalFilters, SearchParams, SearchTerms } from 'src/models/search';
 import { TaxonWormsLikeItem } from 'src/models/taxanomies';
 
 function getSearchChipLabel(searchTerm: SearchTerms): string {
@@ -38,11 +38,13 @@ function createAphiaSearchTerm(item: TaxonWormsLikeItem): SearchTerms {
 function buildSearchParams(
   page: number,
   activeSearchTerms: SearchTerms[],
+  selectedSources: string[],
+  additionalFilters: AdditionalFilters,
   activeIncludeDescendants: boolean,
   calculateSummary: boolean = false,
   pageSize: number
 ): SearchParams {
-  const params: SearchParams = {
+  let params: SearchParams = {
     page_size: pageSize,
     page,
     include_descendants: activeIncludeDescendants
@@ -55,6 +57,14 @@ function buildSearchParams(
 
   if (aphiaIds.length > 0) {
     params.aphia_ids = aphiaIds;
+  }
+
+  if (selectedSources.length > 0) {
+    params.sources = selectedSources;
+  }
+
+  if (additionalFilters && Object.keys(additionalFilters).length > 0) {
+    params = { ...params, ...additionalFilters };
   }
 
   if (namePart) {
@@ -85,6 +95,10 @@ export function useAnnotationsSearch() {
   const hasResults = useMemo(() => annotations.length > 0, [annotations]);
   const chipLabels = useMemo(() => searchTerms.map(getSearchChipLabel), [searchTerms]);
 
+  const [selectedSources, setSelectedSources] = useState<string[]>([]);
+
+  const [additionalFilters, setAdditionalFilters] = useState<AdditionalFilters>({});
+
   const resetResults = () => {
     setAnnotations([]);
     setSummary(null);
@@ -103,6 +117,8 @@ export function useAnnotationsSearch() {
       const queryParams = buildSearchParams(
         page,
         activeSearchTerms,
+        selectedSources,
+        additionalFilters,
         activeIncludeDescendants,
         true,
         20
@@ -240,6 +256,10 @@ export function useAnnotationsSearch() {
     removeSearchTerm,
     handleSearchInputKeyDown,
     submitSearch,
-    loadMore
+    loadMore,
+    selectedSources,
+    setSelectedSources,
+    additionalFilters,
+    setAdditionalFilters
   };
 }

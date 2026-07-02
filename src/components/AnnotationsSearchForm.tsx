@@ -1,11 +1,13 @@
 'use client';
 
 import { Box } from '@mui/material';
-import type { KeyboardEvent } from 'react';
+import { type KeyboardEvent, useState } from 'react';
+import { AdditionalFilters } from 'src/components/annotations-search-form/AdditionalFilters';
 import { IncludeDescendantsToggle } from 'src/components/annotations-search-form/IncludeDescendantsToggle';
 import { SearchActionButton } from 'src/components/annotations-search-form/SearchActionButton';
-import { SourceSelect } from 'src/components/annotations-search-form/SourceSelect';
+import { SourceDropdown } from 'src/components/annotations-search-form/SourceDropdown';
 import { TaxonAutocompleteField } from 'src/components/annotations-search-form/TaxonAutocompleteField';
+import type { AdditionalFilters as AdditionalFiltersModel } from 'src/models/search';
 import type { TaxonWormsLikeItem } from 'src/models/taxanomies';
 
 interface AnnotationsSearchFormProps {
@@ -24,6 +26,12 @@ interface AnnotationsSearchFormProps {
   onSelectWormsOption: (item: TaxonWormsLikeItem) => void;
 
   onSubmit: () => Promise<void> | void;
+
+  selectedSources: string[];
+  onSelectedSourcesChange: (sources: string[]) => void;
+
+  additionalFilters: AdditionalFiltersModel;
+  onAdditionalFiltersChange: (filters: AdditionalFiltersModel) => void;
 }
 
 export function AnnotationsSearchForm({
@@ -37,7 +45,11 @@ export function AnnotationsSearchForm({
   wormsOptions,
   wormsLoading,
   onSelectWormsOption,
-  onSubmit
+  onSubmit,
+  selectedSources,
+  onSelectedSourcesChange,
+  additionalFilters,
+  onAdditionalFiltersChange
 }: AnnotationsSearchFormProps) {
   const buttonSx = {
     bgcolor: '#2C2C2C',
@@ -46,6 +58,8 @@ export function AnnotationsSearchForm({
       opacity: 0.9
     }
   };
+
+  const [showAdditionalFilters, setShowAdditionalFilters] = useState(false);
 
   return (
     <Box
@@ -65,7 +79,13 @@ export function AnnotationsSearchForm({
           alignItems: 'center'
         }}
       >
-        <SearchActionButton ariaLabel="Apply filters" iconOnly sx={buttonSx} />
+        <SearchActionButton
+          ariaLabel="Apply filters"
+          iconOnly
+          type="button"
+          sx={buttonSx}
+          onClick={() => setShowAdditionalFilters(!showAdditionalFilters)}
+        />
         <TaxonAutocompleteField
           chipLabels={chipLabels}
           inputValue={searchInput}
@@ -76,13 +96,27 @@ export function AnnotationsSearchForm({
           onRemoveSearchTerm={onRemoveSearchTerm}
           onSelectOption={onSelectWormsOption}
         />
-        <SearchActionButton sx={{ ...buttonSx, color: 'white' }}>Search</SearchActionButton>
+        <SearchActionButton
+          sx={{ ...buttonSx, color: 'white' }}
+          type="submit"
+        >
+          Search
+        </SearchActionButton>
         <IncludeDescendantsToggle
           checked={includeDescendants}
           onChange={onIncludeDescendantsChange}
         />
-        <SourceSelect />
+        <SourceDropdown
+          selectedSources={selectedSources}
+          onSelectedSourcesChange={onSelectedSourcesChange}
+        />
       </Box>
+      {showAdditionalFilters && (
+        <AdditionalFilters
+          additionalFilters={additionalFilters}
+          onAdditionalFiltersChange={onAdditionalFiltersChange}
+        />
+      )}
     </Box>
   );
 }

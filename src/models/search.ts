@@ -1,4 +1,4 @@
-export interface SearchParams {
+export interface SearchParams extends AdditionalFilters {
   page_size: number;
   page: number;
   aphia_ids?: number[];
@@ -6,6 +6,7 @@ export interface SearchParams {
   include_descendants?: boolean;
   calculate_summary?: boolean;
   return_image_annotation_name_info?: boolean;
+  sources?: string[];
 }
 
 export interface AdditionalFilters {
