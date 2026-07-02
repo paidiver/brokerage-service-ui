@@ -34,13 +34,26 @@ const StatusDot = ({ status }: { status: string }) => (
 );
 
 export const SourceDropdown = () => {
-    const { data, makeRequest } = useApiRequest<SourcesInfoResponse>();
+    const { data, error, makeRequest } = useApiRequest<SourcesInfoResponse>();
     const [options, setOptions] = useState<SourceOption[]>([]);
     const [selectedOptions, setSelectedOptions] = useState<SourceOption[]>([]);
 
-    useEffect(() => {
+    const fetchSources = () => {
         makeRequest({ method: 'GET', url: '/sources' });
-    }, [makeRequest]);
+        if (error) {
+            console.error('Error fetching sources:', error);
+        }
+    }
+
+    useEffect(() => {
+        fetchSources();
+
+        const interval = setInterval(() => {
+            fetchSources();
+        }, 10 * 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, [fetchSources]);
 
     useEffect(() => {
         if (data?.sources) {
