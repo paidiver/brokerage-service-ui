@@ -5,7 +5,7 @@ import React, { Suspense } from 'react';
 import { AppWrapper } from 'src/components/AppWrapper';
 
 export const metadata: Metadata = {
-  title: 'BODC Data Submission'
+  title: 'Brokerage Service',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
