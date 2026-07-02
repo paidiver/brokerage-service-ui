@@ -14,7 +14,9 @@ export default function Home() {
     selectWormsOption,
     removeSearchTerm,
     handleSearchInputKeyDown,
-    submitSearch
+    submitSearch,
+    selectedSources,
+    setSelectedSources
   } = useAnnotationsSearch();
 
   const { wormsOptions, wormsLoading } = useWormsAutocomplete(searchInput);
@@ -33,6 +35,8 @@ export default function Home() {
         wormsLoading={wormsLoading}
         onSelectWormsOption={selectWormsOption}
         onSubmit={submitSearch}
+        selectedSources={selectedSources}
+        onSelectedSourcesChange={setSelectedSources}
       />
     </div>
   );
