@@ -20,6 +20,11 @@ const MAX_VISIBLE_LABELS = 1
 
 type SourceOption = { label: string; value: string; status: string }
 
+interface SourceDropdownProps {
+    selectedSources: string[];
+    onSelectedSourcesChange: (sources: string[]) => void;
+}
+
 const StatusDot = ({ status }: { status: string }) => (
     <Box
         component="span"
@@ -95,7 +100,7 @@ const SourceOptionItem = ({
     );
 };
 
-export const SourceDropdown = ({ selectedSources, onSelectedSourcesChange }: { selectedSources: string[]; onSelectedSourcesChange: (sources: string[]) => void  }) => {
+export const SourceDropdown = ({ selectedSources, onSelectedSourcesChange }: SourceDropdownProps) => {
     const { data, makeRequest } = useApiRequest<SourcesInfoResponse>();
     const [options, setOptions] = useState<SourceOption[]>([]);
 
