@@ -95,10 +95,9 @@ const SourceOptionItem = ({
     );
 };
 
-export const SourceDropdown = () => {
+export const SourceDropdown = ({ selectedSources, onSelectedSourcesChange }: { selectedSources: string[]; onSelectedSourcesChange: (sources: string[]) => void  }) => {
     const { data, makeRequest } = useApiRequest<SourcesInfoResponse>();
     const [options, setOptions] = useState<SourceOption[]>([]);
-    const [selectedOptions, setSelectedOptions] = useState<SourceOption[]>([]);
 
     useEffect(() => {
         makeRequest({ method: 'GET', url: '/sources' })
@@ -116,32 +115,37 @@ export const SourceDropdown = () => {
                 label: source.source_name.toUpperCase(),
                 value: source.source_name,
                 status: source.status,
-            }));
-            setOptions(formattedOptions);
+            }))
+            setOptions(formattedOptions)
 
-            setSelectedOptions(formattedOptions.filter((option) => option.status === 'ok'));
+            const healthySources = formattedOptions
+                .filter((o) => o.status === 'ok')
+                .map((o) => o.value)
+            onSelectedSourcesChange(healthySources)
         }
-    }, [data]);
+    }, [data])
 
     const enabledOptions = options.filter((o) => o.status === 'ok');
-    const allSelected = enabledOptions.length > 0 && 
-        enabledOptions.every((o) => selectedOptions.some((s) => s.value === o.value));
+    const selectedOptionObjects = options.filter((o) => selectedSources.includes(o.value))
+
+    const allSelected =
+        enabledOptions.length > 0 &&
+        enabledOptions.every((o) => selectedSources.includes(o.value))
 
     const handleChange = (_: unknown, newValue: SourceOption[]) => {
-        setSelectedOptions(newValue.filter((o) => o.value !== 'all'));
-    };
+        const realSelected = newValue.filter((o) => o.value !== 'all')
+        onSelectedSourcesChange(realSelected.map((o) => o.value))
+    }
 
     const handleAllToggle = () => {
-        if (allSelected) {
-            setSelectedOptions([]);
-        } else {
-            setSelectedOptions(enabledOptions);
-        }
-    };
+        onSelectedSourcesChange(
+            allSelected ? [] : enabledOptions.map((o) => o.value)
+        )
+    }
 
     const autocompleteValue = allSelected
-        ? [ALL_OPTION, ...selectedOptions]
-        : selectedOptions;
+        ? [ALL_OPTION, ...selectedOptionObjects]
+        : selectedOptionObjects
 
     const autocompleteOptions = [ALL_OPTION, ...options];
 
@@ -155,8 +159,8 @@ export const SourceDropdown = () => {
             getOptionLabel={(option) => option.label}
             getOptionDisabled={(option) => option.value !== 'all' && option.status !== 'ok'}
             isOptionEqualToValue={(option, value) => option.value === value.value}
-            renderValue={(selected) => {
-                const realSelected = selected.filter((o) => o.value !== 'all');
+            renderValue={(selectedOptionObjects) => {
+                const realSelected = selectedOptionObjects.filter((o) => o.value !== 'all');
                 
                 const displayText = () => {
                     if (realSelected.length === 0) return '';
@@ -180,7 +184,7 @@ export const SourceDropdown = () => {
                             key="all"
                             props={props}
                             allSelected={allSelected}
-                            someSelected={selectedOptions.length > 0}
+                            someSelected={selectedSources.length > 0}
                             onToggle={handleAllToggle}
                         />
                     );

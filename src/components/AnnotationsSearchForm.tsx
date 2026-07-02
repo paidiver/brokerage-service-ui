@@ -24,6 +24,9 @@ interface AnnotationsSearchFormProps {
   onSelectWormsOption: (item: TaxonWormsLikeItem) => void;
 
   onSubmit: () => Promise<void> | void;
+
+  selectedSources: string[];
+  onSelectedSourcesChange: (sources: string[]) => void;
 }
 
 export function AnnotationsSearchForm({
@@ -37,7 +40,9 @@ export function AnnotationsSearchForm({
   wormsOptions,
   wormsLoading,
   onSelectWormsOption,
-  onSubmit
+  onSubmit,
+  selectedSources,
+  onSelectedSourcesChange
 }: AnnotationsSearchFormProps) {
   const buttonSx = {
     bgcolor: '#2C2C2C',
@@ -81,7 +86,10 @@ export function AnnotationsSearchForm({
           checked={includeDescendants}
           onChange={onIncludeDescendantsChange}
         />
-        <SourceDropdown />
+        <SourceDropdown
+          selectedSources={selectedSources}
+          onSelectedSourcesChange={onSelectedSourcesChange}
+        />
       </Box>
     </Box>
   );

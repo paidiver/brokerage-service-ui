@@ -38,6 +38,7 @@ function createAphiaSearchTerm(item: TaxonWormsLikeItem): SearchTerms {
 function buildSearchParams(
   page: number,
   activeSearchTerms: SearchTerms[],
+  selectedSources: string[],
   activeIncludeDescendants: boolean,
   calculateSummary: boolean = false,
   pageSize: number
@@ -55,6 +56,10 @@ function buildSearchParams(
 
   if (aphiaIds.length > 0) {
     params.aphia_ids = aphiaIds;
+  }
+
+  if (selectedSources.length > 0) {
+    params.sources = selectedSources;
   }
 
   if (namePart) {
@@ -85,6 +90,8 @@ export function useAnnotationsSearch() {
   const hasResults = useMemo(() => annotations.length > 0, [annotations]);
   const chipLabels = useMemo(() => searchTerms.map(getSearchChipLabel), [searchTerms]);
 
+  const [selectedSources, setSelectedSources] = useState<string[]>([]);
+
   const resetResults = () => {
     setAnnotations([]);
     setSummary(null);
@@ -103,6 +110,7 @@ export function useAnnotationsSearch() {
       const queryParams = buildSearchParams(
         page,
         activeSearchTerms,
+        selectedSources,
         activeIncludeDescendants,
         true,
         20
@@ -240,6 +248,8 @@ export function useAnnotationsSearch() {
     removeSearchTerm,
     handleSearchInputKeyDown,
     submitSearch,
-    loadMore
+    loadMore,
+    selectedSources,
+    setSelectedSources
   };
 }
