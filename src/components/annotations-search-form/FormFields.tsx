@@ -42,6 +42,9 @@ interface SelectFieldProps extends SharedFieldProps {
 interface TextInputFieldProps extends SharedFieldProps {
   value: string;
   type?: HTMLInputTypeAttribute;
+  error?: boolean;
+  helperText?: TextFieldProps['helperText'];
+  slotProps?: TextFieldProps['slotProps'];
   onChange: (value: string) => void;
 }
 
@@ -89,6 +92,9 @@ export function TextInputField({
   label,
   value,
   type = 'text',
+  error,
+  helperText,
+  slotProps,
   sx,
   onChange
 }: TextInputFieldProps) {
@@ -98,6 +104,9 @@ export function TextInputField({
       size="small"
       type={type}
       value={value}
+      error={error}
+      helperText={helperText}
+      slotProps={slotProps}
       sx={sx}
       onChange={event => onChange(event.target.value)}
     />
