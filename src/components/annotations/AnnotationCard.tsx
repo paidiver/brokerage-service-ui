@@ -12,18 +12,18 @@ import { AnnotationRecord } from '../../models/annotations'
 
 
 const ImagePlaceholder = () => (
-  <Box
-    sx={{
-      width: '100%',
-      aspectRatio: '4/3',
-      bgcolor: 'grey.200',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    <BrokenImageIcon sx={{ color: 'grey.400', fontSize: 48 }} />
-  </Box>
+    <Box
+        sx={{
+            width: '100%',
+            height: 140,
+            bgcolor: 'grey.200',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+        }}
+    >
+        <BrokenImageIcon sx={{ color: 'grey.400', fontSize: 40 }} />
+    </Box>
 )
 
 export const AnnotationCard = ({ annotation }: { annotation: AnnotationRecord }) => {
@@ -39,15 +39,19 @@ export const AnnotationCard = ({ annotation }: { annotation: AnnotationRecord })
       sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
     >
       {annotation.image_handle && !imgError ? (
-        <CardMedia
-          component="img"
-          image={annotation.image_handle}
-          alt={annotation.image_filename ?? 'Annotation image'}
-          onError={() => setImgError(true)}
-          sx={{ aspectRatio: '4/3', objectFit: 'cover' }}
-        />
+          <CardMedia
+              component="img"
+              image={annotation.image_handle}
+              alt={annotation.image_filename ?? 'Annotation image'}
+              onError={() => setImgError(true)}
+              sx={{
+                  height: 140,
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+              }}
+          />
       ) : (
-        <ImagePlaceholder />
+          <ImagePlaceholder />
       )}
 
       <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>

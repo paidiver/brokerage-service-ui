@@ -6,6 +6,10 @@ import { useWormsAutocomplete } from 'src/hooks/useWormsAutocomplete';
 
 export default function Home() {
   const {
+    annotations,
+    summary,
+    count,
+    hasResults,
     searchInput,
     setSearchInput,
     includeDescendants,
@@ -22,7 +26,7 @@ export default function Home() {
   const { wormsOptions, wormsLoading } = useWormsAutocomplete(searchInput);
 
   return (
-    <div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <AnnotationsSearchForm
         searchInput={searchInput}
         onSearchInputChange={setSearchInput}
@@ -38,6 +42,8 @@ export default function Home() {
         selectedSources={selectedSources}
         onSelectedSourcesChange={setSelectedSources}
       />
-    </div>
+
+      
+    </Box>
   );
 }
