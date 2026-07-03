@@ -4,7 +4,7 @@ import { Box } from '@mui/material';
 import type { KeyboardEvent } from 'react';
 import { IncludeDescendantsToggle } from 'src/components/annotations-search-form/IncludeDescendantsToggle';
 import { SearchActionButton } from 'src/components/annotations-search-form/SearchActionButton';
-import { SourceSelect } from 'src/components/annotations-search-form/SourceSelect';
+import { SourceDropdown } from 'src/components/annotations-search-form/SourceDropdown';
 import { TaxonAutocompleteField } from 'src/components/annotations-search-form/TaxonAutocompleteField';
 import type { TaxonWormsLikeItem } from 'src/models/taxanomies';
 
@@ -24,6 +24,9 @@ interface AnnotationsSearchFormProps {
   onSelectWormsOption: (item: TaxonWormsLikeItem) => void;
 
   onSubmit: () => Promise<void> | void;
+
+  selectedSources: string[];
+  onSelectedSourcesChange: (sources: string[]) => void;
 }
 
 export function AnnotationsSearchForm({
@@ -37,7 +40,9 @@ export function AnnotationsSearchForm({
   wormsOptions,
   wormsLoading,
   onSelectWormsOption,
-  onSubmit
+  onSubmit,
+  selectedSources,
+  onSelectedSourcesChange
 }: AnnotationsSearchFormProps) {
   const buttonSx = {
     bgcolor: '#2C2C2C',
@@ -81,7 +86,10 @@ export function AnnotationsSearchForm({
           checked={includeDescendants}
           onChange={onIncludeDescendantsChange}
         />
-        <SourceSelect />
+        <SourceDropdown
+          selectedSources={selectedSources}
+          onSelectedSourcesChange={onSelectedSourcesChange}
+        />
       </Box>
     </Box>
   );
