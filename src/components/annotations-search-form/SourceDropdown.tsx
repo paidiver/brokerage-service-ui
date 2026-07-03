@@ -29,6 +29,7 @@ interface SourceDropdownProps {
 const StatusDot = ({ status }: { status: string }) => (
     <Box
         component="span"
+        title={status === 'ok' ? 'Healthy' : 'Unhealthy'}
         sx={{
             width: 10,
             height: 10,
@@ -37,6 +38,7 @@ const StatusDot = ({ status }: { status: string }) => (
             display: 'inline-block',
             ml: 'auto',
             flexShrink: 0,
+            pointerEvents: 'auto',
         }}
     />
 );
