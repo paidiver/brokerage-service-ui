@@ -46,6 +46,8 @@ function filtersToDraft(filters: AdditionalFiltersModel): DraftFilters {
   };
 }
 
+const emptyDraftFilters = filtersToDraft({});
+
 function addTextFilter(
   filters: AdditionalFiltersModel,
   key: 'image_set_name' | 'platform' | 'project',
@@ -190,6 +192,12 @@ export function AdditionalFilters({
 
   const boundErrors = useMemo(() => validateBounds(draftFilters), [draftFilters]);
   const hasBoundErrors = Object.keys(boundErrors).length > 0;
+  const hasDraftFilters = Object.values(draftFilters).some(Boolean);
+
+  const clearAllFilters = () => {
+    setDraftFilters(emptyDraftFilters);
+    onAdditionalFiltersChange({});
+  };
 
   return (
     <Box
@@ -214,24 +222,42 @@ export function AdditionalFilters({
         <Typography component="h2" variant="h6">
           Filters
         </Typography>
-
-        <Button
-          type="button"
-          variant="contained"
+        <Box
           sx={{
-            bgcolor: '#2C2C2C',
-            color: 'white',
-            whiteSpace: 'nowrap',
-            '&:hover': {
-              bgcolor: '#1F1F1F',
-              opacity: 0.9
-            }
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            mb: 2
           }}
-          disabled={hasBoundErrors}
-          onClick={() => onAdditionalFiltersChange(draftToFilters(draftFilters))}
         >
-          Update Filter
-        </Button>
+          <Button
+            type="button"
+            variant="text"
+            color="inherit"
+            disabled={!hasDraftFilters}
+            onClick={clearAllFilters}
+          >
+            Clear
+          </Button>
+          <Button
+            type="button"
+            variant="contained"
+            sx={{
+              bgcolor: '#2C2C2C',
+              color: 'white',
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                bgcolor: '#1F1F1F',
+                opacity: 0.9
+              }
+            }}
+            disabled={hasBoundErrors}
+            onClick={() => onAdditionalFiltersChange(draftToFilters(draftFilters))}
+          >
+            Update Filter
+          </Button>
+        </Box>
       </Box>
 
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
@@ -283,7 +309,6 @@ export function AdditionalFilters({
         <Typography component="p" variant="h6">
           Bounds:
         </Typography>
-        {/* <div className="flex justify-items-start items-center font-bold text-sm">Bounds:</div> */}
         <TextInputField
           label="Min lat"
           type="number"
