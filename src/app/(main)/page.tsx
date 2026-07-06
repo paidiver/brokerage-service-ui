@@ -22,7 +22,9 @@ export default function Home() {
     handleSearchInputKeyDown,
     submitSearch,
     selectedSources,
-    setSelectedSources
+    setSelectedSources,
+    additionalFilters,
+    setAdditionalFilters
   } = useAnnotationsSearch();
 
   const { wormsOptions, wormsLoading } = useWormsAutocomplete(searchInput);
@@ -43,6 +45,8 @@ export default function Home() {
         onSubmit={submitSearch}
         selectedSources={selectedSources}
         onSelectedSourcesChange={setSelectedSources}
+        additionalFilters={additionalFilters}
+        onAdditionalFiltersChange={setAdditionalFilters}
       />
 
       {hasResults && (

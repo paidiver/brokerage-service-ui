@@ -1,4 +1,4 @@
-export interface SearchParams {
+export interface SearchParams extends AdditionalFilters {
   page_size: number;
   page: number;
   aphia_ids?: number[];
@@ -60,9 +60,9 @@ export type FaunaAttraction = (typeof faunaAttractionOptions)[number]['value'];
 export const marineZoneOptions = [
   { value: 'atmosphere', label: 'Atmosphere' },
   { value: 'laboratory', label: 'Laboratory' },
-  { value: 'sea_surface', label: 'Sea surface' },
+  { value: 'sea surface', label: 'Sea surface' },
   { value: 'seafloor', label: 'Seafloor' },
-  { value: 'water_column', label: 'Water column' }
+  { value: 'water column', label: 'Water column' }
 ] as const satisfies readonly SelectOption<string>[];
 
 export type MarineZone = (typeof marineZoneOptions)[number]['value'];
