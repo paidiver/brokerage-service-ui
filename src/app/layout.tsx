@@ -1,3 +1,4 @@
+import 'maplibre-gl/dist/maplibre-gl.css';
 import '../globals.css';
 
 import type { Metadata } from 'next';
@@ -5,7 +6,7 @@ import React, { Suspense } from 'react';
 import { AppWrapper } from 'src/components/AppWrapper';
 
 export const metadata: Metadata = {
-  title: 'Brokerage Service',
+  title: 'Brokerage Service'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

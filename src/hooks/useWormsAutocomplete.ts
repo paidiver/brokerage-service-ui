@@ -30,7 +30,7 @@ export function useWormsAutocomplete(searchInput: string): UseWormsAutocompleteR
 
         const results = await apiRequest<TaxonWormsLikeResponse>({
           method: 'GET',
-          url: `/taxa/ajax_by_name_part/${term}`
+          url: `/taxonomy/worms/taxa/${term}`
         });
 
         if (isActive) {

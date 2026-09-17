@@ -27,13 +27,14 @@ All API calls must go through the `apiRequest()` function in [apiClient.ts](/src
 **Example:**
 
 ```ts
-import { apiRequest } from '../../api/apiClient'
-import { SourcesInfoResponse } from '../../types/responseModels'
+import { apiRequest } from '../../api/apiClient';
+import { SourcesInfoResponse } from '../../types/responseModels';
 
-const sourceInfo = async () => await apiRequest<SourcesInfoResponse>({
-  method: 'GET',
-  url: '/sources'
-});
+const sourceInfo = async () =>
+  await apiRequest<SourcesInfoResponse>({
+    method: 'GET',
+    url: '/sources'
+  });
 
 console.log('sourceInfo', sourceInfo);
 ```
@@ -47,6 +48,7 @@ The API base URL is controlled by the `NEXT_PUBLIC_BROKERAGE_SERVICE_API` enviro
 Response shapes are defined as interfaces in [apiResponseTypes.ts](/src/types/apiResponseTypes.ts).
 
 When adding a new endpoint:
+
 1. Create an entity-specific interface in `/src/models/{entity_name}.ts` (e.g. `images.ts` for an image entity).
 2. Add a corresponding response wrapper interface in [apiResponseTypes.ts](/src/types/apiResponseTypes.ts) that describes the shape actually returned by the endpoint.
 
@@ -56,31 +58,31 @@ For example, for an endpoint returning a list of images: define the `Image` inte
 
 `apiRequest()` accepts the following options:
 
-| Parameter | Required | Description |
-|---|---|---|
-| `method` | Yes | HTTP method: `'GET'`, `'POST'`, `'PUT'`, `'PATCH'`, or `'DELETE'`. |
-| `url` | Yes | The endpoint path, relative to the configured base URL (e.g. `/sources`). |
-| `data` | Only for `POST`, `PUT`, `PATCH`, `DELETE` | The request body to send. |
-| `queryParams` | No | An object of key/value pairs sent as URL query parameters (e.g. `{ page: 1, limit: 20 }`). |
-| `responseType` | No | Expected response format: `'json'` (default), `'blob'`, `'arraybuffer'`, or `'text'`. |
+| Parameter      | Required                                  | Description                                                                                |
+| -------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `method`       | Yes                                       | HTTP method: `'GET'`, `'POST'`, `'PUT'`, `'PATCH'`, or `'DELETE'`.                         |
+| `url`          | Yes                                       | The endpoint path, relative to the configured base URL (e.g. `/sources`).                  |
+| `data`         | Only for `POST`, `PUT`, `PATCH`, `DELETE` | The request body to send.                                                                  |
+| `queryParams`  | No                                        | An object of key/value pairs sent as URL query parameters (e.g. `{ page: 1, limit: 20 }`). |
+| `responseType` | No                                        | Expected response format: `'json'` (default), `'blob'`, `'arraybuffer'`, or `'text'`.      |
 
 **Example with query parameters and a typed response:**
 
 ```ts
 const results = await apiRequest<TaxaBulkResponse>({
   method: 'GET',
-  url: '/taxa/ajax_by_name_part/crab',
+  url: '/taxonomy/worms/taxa/crab',
   queryParams: {
-      sources: 'bodc',
-      combine_vernaculars: true
-    }
+    sources: 'bodc',
+    combine_vernaculars: true
+  }
 });
 ```
 
 **Example with a request body:**
 
 ```ts
-await apiRequest<AnnotaionsSubmissionResponse>({
+await apiRequest<AnnotationsSubmissionResponse>({
   method: 'POST',
   url: '/annotations',
   data: { title: 'New annotations' }
@@ -96,7 +98,7 @@ While `apiRequest()` is the underlying function that performs the HTTP call, mos
 ```tsx
 'use client';
 import { useApiRequest } from '../../hooks/useApiRequest';
-import { SourcesInfoResponse } from '../../types/apiResponseTypes.ts'
+import { SourcesInfoResponse } from '../../types/apiResponseTypes.ts';
 
 export default function SourcesList() {
   const { data, status, error, makeRequest } = useApiRequest<SourcesInfoResponse>();
@@ -104,7 +106,7 @@ export default function SourcesList() {
   const fetchSources = () => {
     makeRequest({
       method: 'GET',
-      url: '/sources',
+      url: '/sources'
     });
   };
 
@@ -116,9 +118,7 @@ export default function SourcesList() {
       {status === 'empty' && <p>No sources found.</p>}
       {status === 'validationError' && <p>Error: {error}</p>}
       {status === 'serverError' && <p>Error: {error}</p>}
-      {status === 'success' && (
-        <pre>{JSON.stringify(data, null, 2)}</pre>
-      )}
+      {status === 'success' && <pre>{JSON.stringify(data, null, 2)}</pre>}
     </div>
   );
 }
@@ -126,11 +126,11 @@ export default function SourcesList() {
 
 **What the hook returns:**
 
-| Property | Description |
-|---|---|
-| `data` | The response data, or `null` if not yet loaded or on error. |
-| `status` | One of `'idle'`, `'loading'`, `'success'`, `'empty'`, `'validationError'`, `'serverError'`. |
-| `error` | A human-readable error message, or `null` if no error. |
+| Property      | Description                                                                                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data`        | The response data, or `null` if not yet loaded or on error.                                                                                                                  |
+| `status`      | One of `'idle'`, `'loading'`, `'success'`, `'empty'`, `'validationError'`, `'serverError'`.                                                                                  |
+| `error`       | A human-readable error message, or `null` if no error.                                                                                                                       |
 | `makeRequest` | Function to trigger the request. Accepts the same options as `apiRequest()` (`method`, `url`, `queryParams`, `data`, etc.), plus an optional `isEmpty` override (see below). |
 
 **Detecting empty responses:**
@@ -140,9 +140,9 @@ The hook automatically checks common response shapes (a top-level array, a `resu
 ```tsx
 makeRequest({
   method: 'GET',
-  url: '/taxa/ajax_by_name_part/crab',
+  url: '/taxonomy/worms/taxa/crab',
   queryParams: { sources: ['bodc', 'jncc'] },
-  isEmpty: (data) => !data.ok || !data.data || data.data.length === 0,
+  isEmpty: data => !data.ok || !data.data || data.data.length === 0
 });
 ```
 
@@ -166,6 +166,7 @@ Because this site is deployed as a static brokerage-service-ui on GitHub Pages:
 - it can only interact with backend services that are publicly reachable from the browser
 
 **Required Cnfiguration:**
+
 - Repository Variable `NEXT_PUBLIC_BROKERAGE_SERVICE_API` : The base url for backend API (e.g. `https://brokerage-service.paidiver.site`). To update the variable value in the repository go to Settings > Secrets and variables > Actions >Variables
 
 ## Smoke checks after deployment
@@ -243,6 +244,7 @@ src/
 #### Running tests
 
 Run all tests:
+
 ```bash
 npm run test
 ```

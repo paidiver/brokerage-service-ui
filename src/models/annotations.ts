@@ -5,9 +5,17 @@ export interface AnnotationSummary {
   n_image_sets: number;
 }
 
+export interface AnnotationSearchInfo {
+  image_sets: { uuid: string; name: string }[];
+  annotation_sets: { uuid: string; name: string }[];
+  aphia_ids: { aphia_id: number; scientific_name: string; rank?: string | null }[];
+}
+
 export type AnnotationCoordinates = [number, number][];
 
 export interface AnnotationRecord {
+  image_latitude?: number | null;
+  image_longitude?: number | null;
   source: string;
   uuid: string;
   image_filename: string;

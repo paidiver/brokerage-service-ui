@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "npx eslint . --ext .ts,.tsx",
     "fix": "npx eslint . --ext .ts,.tsx --fix",
-    "test": "vitest run"
+    "test": "vitest run",
+    "predev": "node scripts/copy-maplibre-worker.mjs",
+    "prebuild": "node scripts/copy-maplibre-worker.mjs"
   },
   "dependencies": {
     "@bodc/navbar": "^1.0.6",
@@ -20,6 +22,7 @@
     "classnames": "^2.5.1",
     "dayjs": "^1.11.20",
     "lodash": "^4.17.23",
+    "maplibre-gl": "^6.9.1",
     "next": "^16.2.9",
     "qs": "^6.15.0",
     "react": "19.2.3",

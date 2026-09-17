@@ -43,3 +43,6 @@ next-env.d.ts
 IDE settings
 .idea
 .vscode
+
+# Generated MapLibre worker assets (copied before dev/build)
+/public/maplibre/
