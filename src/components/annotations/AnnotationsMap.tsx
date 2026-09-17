@@ -8,9 +8,11 @@ import Typography from '@mui/material/Typography';
 import { LngLatBounds, Map, Marker, NavigationControl, Popup, setWorkerUrl } from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { SearchActionButton } from 'src/components/annotations-search-form/SearchActionButton';
+import { SOURCE_LABEL } from 'src/constants';
+import { blueScrollbarSx } from 'src/styles/scrollbars';
 
 import { AnnotationRecord } from '../../models/annotations';
-import { AnnotationCard } from './AnnotationCard';
 import { annotationPosition, MapArea, searchArea } from './mapUtils';
 
 interface Props {
@@ -33,7 +35,7 @@ export default function AnnotationsMap({
   const [moved, setMoved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [popups, setPopups] = useState<
-    { element: HTMLDivElement; annotations: AnnotationRecord[] }[]
+    { element: HTMLDivElement; popup: Popup; annotations: AnnotationRecord[] }[]
   >([]);
   const locatedCount = annotations.filter(annotation => annotationPosition(annotation)).length;
 
@@ -103,12 +105,13 @@ export default function AnnotationsMap({
     for (const group of Array.from(groups.values())) {
       bounds.extend(group.position);
       const element = document.createElement('div');
-      contents.push({ element, annotations: group.annotations });
-      const popup = new Popup({ offset: 25, maxWidth: '280px' }).setDOMContent(element);
+      const popup = new Popup({ offset: 20, maxWidth: '220px' }).setDOMContent(element);
+      contents.push({ element, popup, annotations: group.annotations });
       const marker = new Marker({ color: '#302747' })
         .setLngLat(group.position)
         .setPopup(popup)
         .addTo(map);
+      marker.getElement().style.cursor = 'pointer';
       marker
         .getElement()
         .setAttribute(
@@ -202,15 +205,55 @@ export default function AnnotationsMap({
       </Typography>
       {popups.map((popup, index) =>
         createPortal(
-          <Box sx={{ maxHeight: 320, overflowY: 'auto', pt: 1 }}>
-            {popup.annotations.map(annotation => (
-              <Box key={`${annotation.source}:${annotation.uuid}`} sx={{ mb: 1 }}>
-                <AnnotationCard annotation={annotation} />
-                <Button fullWidth variant="contained" onClick={() => onOpenDetails(annotation)}>
-                  View details
-                </Button>
-              </Box>
-            ))}
+          <Box sx={{ width: 188 }}>
+            <Box sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.75, ...blueScrollbarSx }}>
+              {popup.annotations.map(annotation => {
+                const source = annotation.source
+                  ? (SOURCE_LABEL[annotation.source.toLowerCase()] ??
+                    annotation.source.toUpperCase())
+                  : null;
+                return (
+                  <Box
+                    key={`${annotation.source}:${annotation.uuid}`}
+                    sx={{
+                      pb: 1.5,
+                      '& + &': { pt: 1.5, borderTop: '1px solid', borderColor: 'divider' }
+                    }}
+                  >
+                    {annotation.image_handle && (
+                      <Box
+                        component="img"
+                        src={annotation.image_handle}
+                        alt={annotation.image_filename || 'Annotation image'}
+                        sx={{
+                          display: 'block',
+                          width: '100%',
+                          height: 84,
+                          objectFit: 'cover',
+                          borderRadius: 0.5
+                        }}
+                      />
+                    )}
+                    <Typography variant="subtitle2" noWrap sx={{ mt: 1, fontWeight: 'bold' }}>
+                      {annotation.label_name || 'Unknown annotation'}
+                    </Typography>
+                    {source && (
+                      <Typography variant="caption" color="text.secondary" noWrap>
+                        {source}
+                      </Typography>
+                    )}
+                    <SearchActionButton
+                      type="button"
+                      size="small"
+                      sx={{ width: '100%', mt: 1 }}
+                      onClick={() => onOpenDetails(annotation)}
+                    >
+                      View details
+                    </SearchActionButton>
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>,
           popup.element,
           String(index)
