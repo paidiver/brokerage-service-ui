@@ -1,10 +1,12 @@
-export interface SearchParams extends AdditionalFilters {
+export interface SearchParams extends AdditionalFilters, ExcludeFilters {
+  order_by?: 'label_aphia_id' | 'annotation_creation_datetime' | 'label_name';
   page_size: number;
   page: number;
   aphia_ids?: number[];
   name_part?: string;
   include_descendants?: boolean;
-  calculate_summary?: boolean;
+  add_summary?: boolean;
+  add_info?: boolean;
   return_image_annotation_name_info?: boolean;
   sources?: string[];
 }

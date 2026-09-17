@@ -1,11 +1,20 @@
-import type { AnnotationRecord, AnnotationSummary } from 'src/models/annotations';
+import type {
+  AnnotationRecord,
+  AnnotationSearchInfo,
+  AnnotationSummary
+} from 'src/models/annotations';
 import type { SourceConfig, SourceInfo } from 'src/models/sources';
 import type { TaxonWormsLike } from 'src/models/taxanomies';
 
+interface ResultsMetadata {
+  total_results: number;
+  results_from_individual_sources: Record<string, number>;
+}
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
   previous: string | null;
+  result_metadata: ResultsMetadata;
   results: T;
 }
 
@@ -40,6 +49,7 @@ export interface SourcesInfoResponse {
 export type AnnotationsSearchResponse = PaginatedResponse<AnnotationSearchResponseResults>;
 
 export interface AnnotationSearchResponseResults {
-  summary: AnnotationSummary;
+  info?: AnnotationSearchInfo | null;
+  summary?: AnnotationSummary | null;
   annotations: AnnotationRecord[];
 }

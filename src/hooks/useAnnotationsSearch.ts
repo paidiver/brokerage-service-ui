@@ -1,11 +1,21 @@
 'use client';
 
-import { KeyboardEvent, useMemo, useState } from 'react';
-import { apiRequest } from 'src/api/apiClient';
-import { AnnotationsSearchResponse } from 'src/api/types';
-import { AnnotationRecord, AnnotationSummary } from 'src/models/annotations';
-import { AdditionalFilters, SearchParams, SearchTerms } from 'src/models/search';
+import { KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { retryDelay, sessionRequest, waitForPoll } from 'src/api/searchSessions';
+import { MapArea } from 'src/components/annotations/mapUtils';
+import { AnnotationRecord, AnnotationSearchInfo, AnnotationSummary } from 'src/models/annotations';
+import { AdditionalFilters, ExcludeFilters, SearchParams, SearchTerms } from 'src/models/search';
 import { TaxonWormsLikeItem } from 'src/models/taxanomies';
+import {
+  clearSearchUrl,
+  clearStoredSearch,
+  readSearch,
+  readStoredSearch,
+  searchSignature,
+  searchUrl,
+  StoredSearch,
+  storeSearch
+} from 'src/utils/searchLocation';
 
 function getSearchChipLabel(searchTerm: SearchTerms): string {
   if (searchTerm.fieldType === 'name_part') {
@@ -41,10 +51,12 @@ function buildSearchParams(
   selectedSources: string[],
   additionalFilters: AdditionalFilters,
   activeIncludeDescendants: boolean,
-  calculateSummary: boolean = false,
+  addSummary: boolean = false,
+  addInfo: boolean = false,
   pageSize: number
 ): SearchParams {
   let params: SearchParams = {
+    order_by: 'annotation_creation_datetime',
     page_size: pageSize,
     page,
     include_descendants: activeIncludeDescendants
@@ -71,22 +83,37 @@ function buildSearchParams(
     params.name_part = namePart.value as string;
   }
 
-  if (calculateSummary) {
-    params.calculate_summary = true;
+  if (addSummary) {
+    params.add_summary = true;
+  }
+  if (addInfo) {
+    params.add_info = true;
   }
 
   return params;
 }
 
+const PAGE_SIZE = 20;
+
 export function useAnnotationsSearch() {
   const [annotations, setAnnotations] = useState<AnnotationRecord[]>([]);
   const [count, setCount] = useState(0);
   const [summary, setSummary] = useState<AnnotationSummary | null>(null);
+  const [info, setInfo] = useState<AnnotationSearchInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [nextPage, setNextPage] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [appliedParams, setAppliedParams] = useState<SearchParams | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const session = useRef<StoredSearch | null>(null);
+  const lastTask = useRef<SearchParams | null>(null);
+  const [preparing, setPreparing] = useState<string | null>(null);
+  const [errorAction, setErrorAction] = useState<'retry' | 'restart' | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
 
-  const [appliedSearchTerms, setAppliedSearchTerms] = useState<SearchTerms[]>([]);
-  const [appliedIncludeDescendants, setAppliedIncludeDescendants] = useState(false);
+  useEffect(() => () => activeRequest.current?.abort(), []);
 
   const [searchInput, setSearchInput] = useState('');
   const [searchTerms, setSearchTerms] = useState<SearchTerms[]>([]);
@@ -99,54 +126,174 @@ export function useAnnotationsSearch() {
 
   const [additionalFilters, setAdditionalFilters] = useState<AdditionalFilters>({});
 
-  const resetResults = () => {
+  const resetResults = (retainInfo = false) => {
+    if (!retainInfo) setInfo(null);
     setAnnotations([]);
     setSummary(null);
     setCount(0);
-    setNextPage(null);
+    setCurrentPage(1);
+  };
+
+  const updateLocation = (params: SearchParams, mode: 'push' | 'replace' | 'none') => {
+    const url = searchUrl(params);
+    if (mode !== 'none' && window.location.href !== url) {
+      window.history[mode === 'push' ? 'pushState' : 'replaceState'](window.history.state, '', url);
+    }
+    setShareUrl(url);
+    setShareMessage(null);
   };
 
   const loadData = async (
-    page: number,
-    activeSearchTerms: SearchTerms[],
-    activeIncludeDescendants: boolean
+    params: SearchParams,
+    existing: StoredSearch | null = null,
+    mode: 'push' | 'replace' | 'none' = 'push',
+    reset = true,
+    labels: SearchTerms[] = searchTerms,
+    retainInfo = false
   ) => {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    session.current = existing;
+    lastTask.current = params;
+    setAppliedParams(params);
+    setHasSearched(true);
+    if (reset) resetResults(retainInfo);
+    if (!existing) clearStoredSearch();
+    updateLocation(params, mode);
     setIsLoading(true);
+    setError(null);
+    setErrorAction(null);
+    setPreparing(null);
+
+    const persist = (searchId: string, expiresAt: string) => {
+      const stored: StoredSearch = { version: 1, params, searchId, expiresAt, terms: labels };
+      session.current = stored;
+      storeSearch(stored);
+    };
+    const fetchPage = async () => {
+      while (!controller.signal.aborted) {
+        try {
+          return await sessionRequest({
+            method: 'GET',
+            url: `/annotations/search/sessions/${session.current!.searchId}/pages/${params.page}`,
+            signal: controller.signal
+          });
+        } catch (failure) {
+          const response = (
+            failure as {
+              response?: {
+                data?: { detail?: { code?: string } };
+                headers?: Record<string, unknown>;
+              };
+            }
+          )?.response;
+          if (response?.data?.detail?.code !== 'search_session_busy') throw failure;
+          setPreparing(`Preparing page ${params.page}…`);
+          await waitForPoll(retryDelay(response.headers?.['retry-after']), controller.signal);
+        }
+      }
+      throw new DOMException('Search cancelled', 'AbortError');
+    };
 
     try {
-      const queryParams = buildSearchParams(
-        page,
-        activeSearchTerms,
-        selectedSources,
-        additionalFilters,
-        activeIncludeDescendants,
-        true,
-        20
-      );
-
-      const data = await apiRequest<AnnotationsSearchResponse>({
-        method: 'GET',
-        url: `/annotations/search`,
-        queryParams: queryParams
-      });
-
-      if (!data) {
-        resetResults();
-        return;
+      if (existing && Date.parse(existing.expiresAt) <= Date.now()) {
+        throw { response: { data: { detail: { code: 'search_session_expired' } } } };
       }
-
-      setCount(data.count);
-      setSummary(data.results.summary);
-      setAnnotations(data.results.annotations);
-      setNextPage(data.next ? page + 1 : null);
-    } catch (error) {
-      console.error('Failed to load annotations:', error);
-
-      if (page === 1) {
-        resetResults();
+      let response = existing
+        ? await fetchPage()
+        : await sessionRequest({
+            method: 'POST',
+            url: '/annotations/search/sessions',
+            data: { ...params, page: 1 },
+            signal: controller.signal
+          });
+      while (!controller.signal.aborted) {
+        const data = response.data;
+        persist(data.search_id, data.expires_at);
+        setCount(data.count);
+        if (!('status' in data) && data.page === params.page) {
+          if (data.results.info) {
+            const nextInfo = data.results.info;
+            setInfo(current => {
+              const merge = <T>(old: T[], next: T[], key: (item: T) => string | number) =>
+                Array.from(new Map([...old, ...next].map(item => [key(item), item])).values());
+              return {
+                image_sets: merge(
+                  current?.image_sets ?? [],
+                  nextInfo.image_sets ?? [],
+                  item => item.uuid
+                ),
+                annotation_sets: merge(
+                  current?.annotation_sets ?? [],
+                  nextInfo.annotation_sets ?? [],
+                  item => item.uuid
+                ),
+                aphia_ids: merge(
+                  current?.aphia_ids ?? [],
+                  nextInfo.aphia_ids ?? [],
+                  item => item.aphia_id
+                )
+              };
+            });
+          }
+          setSummary(data.results.summary ?? null);
+          setAnnotations(data.results.annotations);
+          setCurrentPage(data.page);
+          break;
+        }
+        setPreparing(`Preparing page ${params.page}… ${data.generated_through_page} pages ready.`);
+        if ('status' in data) await waitForPoll(response.retryAfter, controller.signal);
+        response = await fetchPage();
+      }
+    } catch (failure) {
+      if (!controller.signal.aborted) {
+        const response = (
+          failure as { response?: { status?: number; data?: { detail?: { code?: string } } } }
+        )?.response;
+        const code = response?.data?.detail?.code;
+        if (
+          code === 'search_session_expired' ||
+          code === 'upstream_changed' ||
+          response?.status === 410
+        ) {
+          setError(
+            code === 'upstream_changed'
+              ? 'The source data changed. Restart this search to continue.'
+              : 'This search has expired. Restart it to load fresh results.'
+          );
+          setErrorAction('restart');
+          session.current = null;
+          clearStoredSearch();
+        } else if (code === 'search_session_limit') {
+          setError('This search is too large. Narrow the filters to continue.');
+        } else if (code === 'upstream_ordering' || code === 'upstream_invalid') {
+          setError(
+            'A source returned incompatible results. Please try a different source or search.'
+          );
+        } else if (
+          response?.status === 422 ||
+          code === 'unknown_source' ||
+          code === 'invalid_page'
+        ) {
+          setError(
+            'The search filters or page are not valid. Adjust the search or restart from page 1.'
+          );
+          setErrorAction('restart');
+        } else {
+          setError(
+            code === 'search_creation_limit'
+              ? 'Too many searches were started. Please wait a minute and try again.'
+              : 'Could not load search results. Please try again.'
+          );
+          setErrorAction('retry');
+        }
       }
     } finally {
-      setIsLoading(false);
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+        setPreparing(null);
+      }
     }
   };
 
@@ -186,6 +333,11 @@ export function useAnnotationsSearch() {
     setSearchInput('');
   };
 
+  const clearSearchNames = () => {
+    setSearchInput('');
+    setSearchTerms([]);
+  };
+
   const removeSearchTerm = (indexToRemove: number) => {
     setSearchTerms(currentTerms => currentTerms.filter((_, index) => index !== indexToRemove));
   };
@@ -222,28 +374,207 @@ export function useAnnotationsSearch() {
       setSearchInput('');
     }
 
-    setAppliedSearchTerms(finalSearchTerms);
-    setAppliedIncludeDescendants(includeDescendants);
+    activeRequest.current?.abort();
+    resetResults();
+    setAppliedParams(null);
+    session.current = null;
+    clearStoredSearch();
+    setError(null);
+    setIsLoading(false);
+    setHasSearched(finalSearchTerms.length > 0);
 
     if (finalSearchTerms.length === 0) {
-      resetResults();
+      setShareUrl(null);
+      setPreparing(null);
+      clearSearchUrl();
+      setErrorAction(null);
       return;
     }
+    console.log('Final search terms:', finalSearchTerms);
 
-    await loadData(1, finalSearchTerms, includeDescendants);
+    await loadData(
+      buildSearchParams(
+        1,
+        finalSearchTerms,
+        [...selectedSources],
+        { ...additionalFilters },
+        includeDescendants,
+        true,
+        true,
+        appliedParams?.page_size ?? PAGE_SIZE
+      ),
+      null,
+      'push',
+      true,
+      finalSearchTerms
+    );
   };
 
-  const loadMore = async () => {
-    if (nextPage === null) return;
-    await loadData(nextPage, appliedSearchTerms, appliedIncludeDescendants);
+  const searchThisArea = async (area: MapArea) => {
+    if (!appliedParams || isLoading) return;
+    await loadData({ ...appliedParams, ...area, page: 1, add_summary: true, add_info: true });
   };
+
+  const applyExcludeFilters = async (filters: ExcludeFilters) => {
+    if (!appliedParams || isLoading) return;
+    const params = { ...appliedParams, ...filters, page: 1, add_summary: true, add_info: true };
+    for (const key of [
+      'exclude_image_set',
+      'exclude_annotation_set',
+      'exclude_aphia_ids'
+    ] as const) {
+      if (params[key]?.length === 0) delete params[key];
+    }
+    await loadData(params, null, 'push', true, session.current?.terms, true);
+  };
+
+  const pageSize = appliedParams?.page_size ?? PAGE_SIZE;
+  const totalPages = Math.ceil(count / pageSize);
+  const goToPage = async (page: number) => {
+    if (
+      !appliedParams ||
+      isLoading ||
+      !Number.isInteger(page) ||
+      page < 1 ||
+      page > totalPages ||
+      page === currentPage
+    )
+      return;
+    await loadData(
+      { ...appliedParams, page },
+      session.current,
+      'push',
+      false,
+      session.current?.terms
+    );
+  };
+
+  const retrySearch = async () => {
+    if (lastTask.current)
+      await loadData(lastTask.current, session.current, 'replace', false, session.current?.terms);
+  };
+  const restartSearch = async () => {
+    if (lastTask.current)
+      await loadData({ ...lastTask.current, page: 1 }, null, 'push', true, session.current?.terms);
+  };
+  const shareResults = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareMessage(
+        'Search link copied. It recreates this search using the latest available data.'
+      );
+    } catch {
+      setShareMessage('Copy the search link below to share these filters and this page.');
+    }
+  };
+
+  useEffect(() => {
+    const restore = (initial = false) => {
+      if (initial && activeRequest.current) return;
+      let params: SearchParams | null;
+      const saved = readStoredSearch();
+      try {
+        params = readSearch(new URLSearchParams(window.location.search));
+      } catch (failure) {
+        activeRequest.current?.abort();
+        setIsLoading(false);
+        setPreparing(null);
+        setShareUrl(null);
+        setError((failure as Error).message);
+        setErrorAction(null);
+        return;
+      }
+      if (!params && initial) params = saved?.params ?? null;
+      if (!params) {
+        if (!initial) {
+          activeRequest.current?.abort();
+          resetResults();
+          setHasSearched(false);
+          setIsLoading(false);
+          setError(null);
+          setPreparing(null);
+          setShareUrl(null);
+          setAppliedParams(null);
+          setSearchTerms([]);
+          setSearchInput('');
+          setSelectedSources([]);
+          setAdditionalFilters({});
+          setIncludeDescendants(false);
+          session.current = null;
+          clearStoredSearch();
+        }
+        return;
+      }
+      const matching =
+        saved && searchSignature(saved.params) === searchSignature(params) ? saved : null;
+      const terms: SearchTerms[] = (params.aphia_ids ?? []).map(id => {
+        const term = matching?.terms.find(
+          term => term.fieldType === 'aphia_ids' && term.value[0] === id
+        );
+        return term ?? { fieldType: 'aphia_ids', value: [id, 'Aphia ID'] };
+      });
+      if (params.name_part) terms.push({ fieldType: 'name_part', value: params.name_part });
+      const filters = Object.fromEntries(
+        Object.entries(params).filter(
+          ([key]) =>
+            ![
+              'page',
+              'page_size',
+              'sources',
+              'aphia_ids',
+              'name_part',
+              'include_descendants',
+              'add_summary',
+              'add_info',
+              'exclude_image_set',
+              'exclude_annotation_set',
+              'exclude_aphia_ids'
+            ].includes(key)
+        )
+      );
+      setSearchTerms(terms);
+      setSearchInput('');
+      setSelectedSources(params.sources ?? []);
+      setIncludeDescendants(params.include_descendants ?? false);
+      setAdditionalFilters(filters);
+      void loadData(params, matching, initial ? 'replace' : 'none', true, terms);
+    };
+    // Deferring avoids duplicate POSTs during React Strict Mode's effect replay.
+    const timer = setTimeout(() => restore(true), 0);
+    const pop = () => restore();
+    window.addEventListener('popstate', pop);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('popstate', pop);
+      activeRequest.current?.abort();
+    };
+  }, []);
 
   return {
     annotations,
     count,
     summary,
+    info,
+    excludeFilters: {
+      exclude_image_set: appliedParams?.exclude_image_set,
+      exclude_annotation_set: appliedParams?.exclude_annotation_set,
+      exclude_aphia_ids: appliedParams?.exclude_aphia_ids
+    } satisfies ExcludeFilters,
+    applyExcludeFilters,
     isLoading,
-    nextPage,
+    currentPage,
+    totalPages,
+    pageSize,
+    preparing,
+    errorAction,
+    retrySearch,
+    restartSearch,
+    shareUrl,
+    shareMessage,
+    shareResults,
+    hasSearched,
+    error,
     hasResults,
     searchInput,
     setSearchInput,
@@ -254,9 +585,11 @@ export function useAnnotationsSearch() {
     addNamePartSearch,
     selectWormsOption,
     removeSearchTerm,
+    clearSearchNames,
     handleSearchInputKeyDown,
     submitSearch,
-    loadMore,
+    goToPage,
+    searchThisArea,
     selectedSources,
     setSelectedSources,
     additionalFilters,
