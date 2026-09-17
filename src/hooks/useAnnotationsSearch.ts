@@ -1,6 +1,7 @@
 'use client';
 
 import { KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { downloadAnnotationExport } from 'src/api/annotationExport';
 import { retryDelay, sessionRequest, waitForPoll } from 'src/api/searchSessions';
 import { MapArea } from 'src/components/annotations/mapUtils';
 import { AnnotationRecord, AnnotationSearchInfo, AnnotationSummary } from 'src/models/annotations';
@@ -101,6 +102,8 @@ export function useAnnotationsSearch() {
   const [summary, setSummary] = useState<AnnotationSummary | null>(null);
   const [info, setInfo] = useState<AnnotationSearchInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [isRefreshingResults, setIsRefreshingResults] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasSearched, setHasSearched] = useState(false);
@@ -480,6 +483,18 @@ export function useAnnotationsSearch() {
       setShareMessage('Copy the search link below to share these filters and this page.');
     }
   };
+  const exportResults = async () => {
+    if (!appliedParams || isExporting) return;
+    setIsExporting(true);
+    setExportError(null);
+    try {
+      await downloadAnnotationExport(appliedParams);
+    } catch {
+      setExportError('Could not export the search metadata. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   useEffect(() => {
     const restore = (initial = false) => {
@@ -573,6 +588,9 @@ export function useAnnotationsSearch() {
     } satisfies ExcludeFilters,
     applyExcludeFilters,
     isLoading,
+    isExporting,
+    exportError,
+    exportResults,
     isRefreshingResults,
     currentPage,
     totalPages,

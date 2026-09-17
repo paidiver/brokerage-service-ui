@@ -1,7 +1,9 @@
 'use client';
 
+import DownloadIcon from '@mui/icons-material/Download';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -10,6 +12,7 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
 import { AnnotationRecord, AnnotationSummary } from '../../models/annotations';
+import { SearchActionButton } from '../annotations-search-form/SearchActionButton';
 import { AnnotationCard } from './AnnotationCard';
 import { AnnotationDetailsDialog } from './AnnotationDetailsDialog';
 import { AnnotationCardsSkeleton, SearchResultsSkeleton } from './AnnotationsSkeleton';
@@ -28,6 +31,9 @@ interface AnnotationsGridProps {
   totalPages: number;
   isLoading: boolean;
   isRefreshingResults: boolean;
+  isExporting: boolean;
+  exportError: string | null;
+  onExport: () => void;
   onSearchArea: (area: MapArea) => void;
   onPageChange: (page: number) => void;
 }
@@ -57,6 +63,9 @@ export const AnnotationsGrid = ({
   totalPages,
   isLoading,
   isRefreshingResults,
+  isExporting,
+  exportError,
+  onExport,
   onPageChange,
   onSearchArea
 }: AnnotationsGridProps) => {
@@ -156,6 +165,22 @@ export const AnnotationsGrid = ({
           disabled={isLoading}
           onPageChange={onPageChange}
         />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 1,
+            mb: 3,
+            mt: 4
+          }}
+        >
+          <SearchActionButton type="button" disabled={isLoading || isExporting} onClick={onExport}>
+            <DownloadIcon sx={{ mr: 1 }} />
+            {isExporting ? 'Exporting…' : 'Export results'}
+          </SearchActionButton>
+          {exportError && <Alert severity="error">{exportError}</Alert>}
+        </Box>
       </Box>
       <AnnotationDetailsDialog
         annotation={selectedAnnotation}

@@ -25,6 +25,9 @@ export default function Home() {
     goToPage,
     searchThisArea,
     isLoading,
+    isExporting,
+    exportError,
+    exportResults,
     isRefreshingResults,
     error,
     preparing,
@@ -134,6 +137,9 @@ export default function Home() {
             onSearchArea={searchThisArea}
             isLoading={isLoading}
             isRefreshingResults={isRefreshingResults}
+            isExporting={isExporting}
+            exportError={exportError}
+            onExport={exportResults}
           />
         </Box>
       </Box>
