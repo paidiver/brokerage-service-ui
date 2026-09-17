@@ -11,6 +11,7 @@ import { useState } from 'react';
 
 import { AnnotationRecord, AnnotationSummary } from '../../models/annotations';
 import { AnnotationCard } from './AnnotationCard';
+import { AnnotationDetailsDialog } from './AnnotationDetailsDialog';
 import { AnnotationCardsSkeleton, SearchResultsSkeleton } from './AnnotationsSkeleton';
 import { SearchSummary } from './AnnotationsSummary';
 import { MapArea } from './mapUtils';
@@ -60,6 +61,7 @@ export const AnnotationsGrid = ({
   onSearchArea
 }: AnnotationsGridProps) => {
   const [view, setView] = useState<'grid' | 'map'>('grid');
+  const [selectedAnnotation, setSelectedAnnotation] = useState<AnnotationRecord | null>(null);
 
   if (annotations.length === 0) {
     return isLoading ? <SearchResultsSkeleton /> : <EmptyState />;
@@ -117,6 +119,7 @@ export const AnnotationsGrid = ({
             annotations={annotations}
             isLoading={isLoading}
             onSearchArea={onSearchArea}
+            onOpenDetails={setSelectedAnnotation}
           />
         ) : (
           <>
@@ -126,7 +129,7 @@ export const AnnotationsGrid = ({
                   size={{ xs: 12, sm: 6, lg: 4 }}
                   key={`${annotation.source}:${annotation.uuid}`}
                 >
-                  <AnnotationCard annotation={annotation} />
+                  <AnnotationCard annotation={annotation} onOpenDetails={setSelectedAnnotation} />
                 </Grid>
               ))}
             </Grid>
@@ -154,6 +157,10 @@ export const AnnotationsGrid = ({
           onPageChange={onPageChange}
         />
       </Box>
+      <AnnotationDetailsDialog
+        annotation={selectedAnnotation}
+        onClose={() => setSelectedAnnotation(null)}
+      />
     </Box>
   );
 };

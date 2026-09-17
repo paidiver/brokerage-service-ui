@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import { SearchActionButton } from 'src/components/annotations-search-form/SearchActionButton';
 import { AnnotationSearchInfo } from 'src/models/annotations';
 import { ExcludeFilters as Filters } from 'src/models/search';
+import { blueScrollbarSx } from 'src/styles/scrollbars';
 
 type Props = {
   info: AnnotationSearchInfo | null;
@@ -74,21 +75,8 @@ export function ExcludeFilters({ info, filters, disabled, onChange }: Props) {
     flexDirection: 'column',
     maxHeight: 192,
     overflowY: 'auto',
-    scrollbarWidth: 'thin',
-    scrollbarColor: '#438fca #fff',
     pr: 0.75,
-    '&::-webkit-scrollbar': { width: 9 },
-    '&::-webkit-scrollbar-track': {
-      bgcolor: '#fff',
-      border: '1px solid',
-      borderColor: 'grey.400',
-      borderRadius: 5
-    },
-    '&::-webkit-scrollbar-thumb': {
-      bgcolor: '#438fca',
-      borderRadius: 5,
-      border: '2px solid #fff'
-    }
+    ...blueScrollbarSx
   };
   const truncatedLabelStyle = {
     display: 'block',

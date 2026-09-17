@@ -8,6 +8,8 @@ interface SearchActionButtonProps {
   children?: ReactNode;
   iconOnly?: boolean;
   disabled?: boolean;
+  download?: string;
+  href?: string;
   sx?: SxProps<Theme>;
   size?: 'small' | 'medium' | 'large';
   onClick?: () => void;
@@ -19,6 +21,8 @@ export function SearchActionButton({
   children,
   iconOnly = false,
   disabled = false,
+  download,
+  href,
   sx,
   size = 'medium',
   onClick,
@@ -39,17 +43,38 @@ export function SearchActionButton({
     }
   };
 
+  const mergedSx = [baseSx, ...(Array.isArray(sx) ? sx : [sx])].filter(Boolean) as SxProps<Theme>;
+  const content = iconOnly ? (children ?? <TuneIcon sx={{ color: 'white' }} />) : children;
+
+  if (href) {
+    return (
+      <Button
+        component="a"
+        aria-label={ariaLabel}
+        download={download}
+        href={href}
+        target="_blank"
+        variant="contained"
+        sx={mergedSx}
+        onClick={onClick}
+        size={size}
+      >
+        {content}
+      </Button>
+    );
+  }
+
   return (
     <Button
       aria-label={ariaLabel}
       disabled={disabled}
       variant="contained"
       type={type}
-      sx={[baseSx, ...(Array.isArray(sx) ? sx : [sx])].filter(Boolean) as SxProps<Theme>}
+      sx={mergedSx}
       onClick={onClick}
       size={size}
     >
-      {iconOnly ? (children ?? <TuneIcon sx={{ color: 'white' }} />) : children}
+      {content}
     </Button>
   );
 }

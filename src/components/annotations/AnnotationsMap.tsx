@@ -17,9 +17,15 @@ interface Props {
   annotations: AnnotationRecord[];
   isLoading: boolean;
   onSearchArea: (area: MapArea) => void;
+  onOpenDetails: (annotation: AnnotationRecord) => void;
 }
 
-export default function AnnotationsMap({ annotations, isLoading, onSearchArea }: Props) {
+export default function AnnotationsMap({
+  annotations,
+  isLoading,
+  onSearchArea,
+  onOpenDetails
+}: Props) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const fitted = useRef(false);
@@ -198,10 +204,12 @@ export default function AnnotationsMap({ annotations, isLoading, onSearchArea }:
         createPortal(
           <Box sx={{ maxHeight: 320, overflowY: 'auto', pt: 1 }}>
             {popup.annotations.map(annotation => (
-              <AnnotationCard
-                key={`${annotation.source}:${annotation.uuid}`}
-                annotation={annotation}
-              />
+              <Box key={`${annotation.source}:${annotation.uuid}`} sx={{ mb: 1 }}>
+                <AnnotationCard annotation={annotation} />
+                <Button fullWidth variant="contained" onClick={() => onOpenDetails(annotation)}>
+                  View details
+                </Button>
+              </Box>
             ))}
           </Box>,
           popup.element,
