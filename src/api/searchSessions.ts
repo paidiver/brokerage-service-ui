@@ -1,22 +1,23 @@
 import { AxiosRequestConfig } from 'axios';
 
 import { apiClient } from './apiClient';
-import { AnnotationsSearchResponse } from './types';
+import { AnnotationsSearchResponse, SearchMetadata } from './types';
 
-interface SessionMetadata {
+interface SessionMetadata extends SearchMetadata {
   search_id: string;
   page: number;
-  count: number;
+  page_size: number;
   total_pages: number;
   generated_through_page: number;
   expires_at: string;
 }
-export interface SessionPage extends SessionMetadata, AnnotationsSearchResponse {
-  page_size: number;
-  source_counts: Record<string, number>;
+export interface SessionPage extends AnnotationsSearchResponse {
+  meta: SessionMetadata;
 }
-export interface SessionPending extends SessionMetadata {
+export interface SessionPending {
   status: 'preparing';
+  count: number;
+  meta: SessionMetadata;
 }
 export type SessionResponse = SessionPage | SessionPending;
 

@@ -1,3 +1,5 @@
+import type { PaginatedResponse } from '../api/types';
+
 export interface TaxonWormsLikeItem {
   AphiaID: number;
   scientificname: string;
@@ -13,6 +15,4 @@ export interface TaxonWormsLikeItem {
 
 export type TaxonWormsLike = TaxonWormsLikeItem;
 
-export interface TaxonWormsLikeResponse {
-  results: TaxonWormsLikeItem[];
-}
+export type TaxonWormsLikeResponse = PaginatedResponse<TaxonWormsLikeItem>;

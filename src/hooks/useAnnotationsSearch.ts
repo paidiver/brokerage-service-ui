@@ -183,12 +183,12 @@ export function useAnnotationsSearch() {
           const response = (
             failure as {
               response?: {
-                data?: { detail?: { code?: string } };
+                data?: { code?: string };
                 headers?: Record<string, unknown>;
               };
             }
           )?.response;
-          if (response?.data?.detail?.code !== 'search_session_busy') throw failure;
+          if (response?.data?.code !== 'search_session_busy') throw failure;
           setPreparing(`Preparing page ${params.page}…`);
           await waitForPoll(retryDelay(response.headers?.['retry-after']), controller.signal);
         }
@@ -198,7 +198,7 @@ export function useAnnotationsSearch() {
 
     try {
       if (existing && Date.parse(existing.expiresAt) <= Date.now()) {
-        throw { response: { data: { detail: { code: 'search_session_expired' } } } };
+        throw { response: { data: { code: 'search_session_expired' } } };
       }
       let response = existing
         ? await fetchPage()
@@ -210,11 +210,11 @@ export function useAnnotationsSearch() {
           });
       while (!controller.signal.aborted) {
         const data = response.data;
-        persist(data.search_id, data.expires_at);
+        persist(data.meta.search_id, data.meta.expires_at);
         setCount(data.count);
-        if (!('status' in data) && data.page === params.page) {
-          if (data.results.info) {
-            const nextInfo = data.results.info;
+        if (!('status' in data) && data.meta.page === params.page) {
+          if (data.meta.info) {
+            const nextInfo = data.meta.info;
             setInfo(current => {
               const merge = <T>(old: T[], next: T[], key: (item: T) => string | number) =>
                 Array.from(new Map([...old, ...next].map(item => [key(item), item])).values());
@@ -237,21 +237,22 @@ export function useAnnotationsSearch() {
               };
             });
           }
-          setSummary(data.results.summary ?? null);
-          setAnnotations(data.results.annotations);
-          setCurrentPage(data.page);
+          setSummary(data.meta.summary ?? null);
+          setAnnotations(data.results);
+          setCurrentPage(data.meta.page);
           break;
         }
-        setPreparing(`Preparing page ${params.page}… ${data.generated_through_page} pages ready.`);
+        setPreparing(
+          `Preparing page ${params.page}… ${data.meta.generated_through_page} pages ready.`
+        );
         if ('status' in data) await waitForPoll(response.retryAfter, controller.signal);
         response = await fetchPage();
       }
     } catch (failure) {
       if (!controller.signal.aborted) {
-        const response = (
-          failure as { response?: { status?: number; data?: { detail?: { code?: string } } } }
-        )?.response;
-        const code = response?.data?.detail?.code;
+        const response = (failure as { response?: { status?: number; data?: { code?: string } } })
+          ?.response;
+        const code = response?.data?.code;
         if (
           code === 'search_session_expired' ||
           code === 'upstream_changed' ||
@@ -515,22 +516,20 @@ export function useAnnotationsSearch() {
         return term ?? { fieldType: 'aphia_ids', value: [id, 'Aphia ID'] };
       });
       if (params.name_part) terms.push({ fieldType: 'name_part', value: params.name_part });
-      const filters = Object.fromEntries(
-        Object.entries(params).filter(
-          ([key]) =>
-            ![
-              'page',
-              'page_size',
-              'sources',
-              'aphia_ids',
-              'name_part',
-              'include_descendants',
-              'add_summary',
-              'add_info',
-              'exclude_image_set',
-              'exclude_annotation_set',
-              'exclude_aphia_ids'
-            ].includes(key)
+      const filters: AdditionalFilters = Object.fromEntries(
+        Object.entries(params).filter(([key]) =>
+          [
+            'deployment',
+            'fauna_attraction',
+            'image_set_name',
+            'marine_zone',
+            'max_lat',
+            'max_lon',
+            'min_lat',
+            'min_lon',
+            'platform',
+            'project'
+          ].includes(key)
         )
       );
       setSearchTerms(terms);
