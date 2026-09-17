@@ -1,10 +1,13 @@
 'use client';
 
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
+import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { SearchActionButton } from 'src/components/annotations-search-form/SearchActionButton';
 import { AnnotationSearchInfo } from 'src/models/annotations';
 import { ExcludeFilters as Filters } from 'src/models/search';
 
@@ -16,11 +19,14 @@ type Props = {
 };
 
 export function ExcludeFilters({ info, filters, disabled, onChange }: Props) {
-  const taxa = info?.aphia_ids ?? [];
+  const byLabel = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: 'base' });
+  const taxa = [...(info?.aphia_ids ?? [])].sort((a, b) =>
+    byLabel(a.scientific_name, b.scientific_name)
+  );
   const excludedTaxa = filters.exclude_aphia_ids ?? [];
   const ranks = Array.from(
     new Set(taxa.map(taxon => taxon.rank).filter((rank): rank is string => !!rank))
-  ).sort();
+  ).sort(byLabel);
   const toggleTaxa = (ids: number[], checked: boolean) => {
     onChange({
       ...filters,
@@ -32,12 +38,16 @@ export function ExcludeFilters({ info, filters, disabled, onChange }: Props) {
   const groups = [
     {
       label: 'Image Set',
-      options: (info?.image_sets ?? []).map(item => ({ value: item.uuid, label: item.name })),
+      options: (info?.image_sets ?? [])
+        .map(item => ({ value: item.uuid, label: item.name }))
+        .sort((a, b) => byLabel(a.label, b.label)),
       key: 'exclude_image_set' as const
     },
     {
       label: 'Annotation Set',
-      options: (info?.annotation_sets ?? []).map(item => ({ value: item.uuid, label: item.name })),
+      options: (info?.annotation_sets ?? [])
+        .map(item => ({ value: item.uuid, label: item.name }))
+        .sort((a, b) => byLabel(a.label, b.label)),
       key: 'exclude_annotation_set' as const
     }
   ];
@@ -54,9 +64,69 @@ export function ExcludeFilters({ info, filters, disabled, onChange }: Props) {
   const labelStyle = {
     m: 0,
     minHeight: 32,
+    width: '100%',
+    minWidth: 0,
     alignItems: 'center',
-    '& .MuiFormControlLabel-label': { fontSize: 16, overflowWrap: 'anywhere' }
+    '& .MuiFormControlLabel-label': { fontSize: 16, minWidth: 0 }
   };
+  const scrollAreaStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    maxHeight: 192,
+    overflowY: 'auto',
+    scrollbarWidth: 'thin',
+    scrollbarColor: '#438fca #fff',
+    pr: 0.75,
+    '&::-webkit-scrollbar': { width: 9 },
+    '&::-webkit-scrollbar-track': {
+      bgcolor: '#fff',
+      border: '1px solid',
+      borderColor: 'grey.400',
+      borderRadius: 5
+    },
+    '&::-webkit-scrollbar-thumb': {
+      bgcolor: '#438fca',
+      borderRadius: 5,
+      border: '2px solid #fff'
+    }
+  };
+  const truncatedLabelStyle = {
+    display: 'block',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  };
+  const sectionHeading = (label: string, selectAll: () => void, hasExcluded: boolean) => (
+    <Box
+      component="legend"
+      sx={{
+        width: '100%',
+        mb: 0.5,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 1
+      }}
+    >
+      <Typography component="span" sx={{ fontWeight: 'bold' }}>
+        {label}
+      </Typography>
+      <Tooltip title={`Select all ${label.toLowerCase()} values`}>
+        <span>
+          <SearchActionButton
+            ariaLabel={`Select all ${label.toLowerCase()} values`}
+            iconOnly
+            type="button"
+            size="small"
+            disabled={disabled || !hasExcluded}
+            onClick={selectAll}
+          >
+            <LibraryAddCheckIcon fontSize="small" />
+          </SearchActionButton>
+        </span>
+      </Tooltip>
+    </Box>
+  );
 
   return (
     <Box
@@ -75,18 +145,36 @@ export function ExcludeFilters({ info, filters, disabled, onChange }: Props) {
         gap: 3
       }}
     >
-      {Object.values(filters).some(values => values && values.length > 0) && (
-        <Button
-          size="small"
-          disabled={disabled}
-          sx={{ alignSelf: 'flex-start' }}
-          onClick={() =>
-            onChange({ exclude_image_set: [], exclude_annotation_set: [], exclude_aphia_ids: [] })
-          }
-        >
-          Reset exclusions
-        </Button>
-      )}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between'
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+          Exclude Filters
+        </Typography>
+        <Tooltip title="Reset all exclusions">
+          <span style={{ alignSelf: 'flex-start' }}>
+            <SearchActionButton
+              ariaLabel="Reset exclusions"
+              iconOnly
+              type="button"
+              size="small"
+              disabled={disabled}
+              onClick={() =>
+                onChange({
+                  exclude_image_set: [],
+                  exclude_annotation_set: [],
+                  exclude_aphia_ids: []
+                })
+              }
+            >
+              <FilterAltOffIcon fontSize="small" />
+            </SearchActionButton>
+          </span>
+        </Tooltip>
+      </Box>
       {!hasOptions && (
         <Typography variant="body2" color="text.secondary">
           {disabled ? 'Loading filters…' : 'No filter information available for these results.'}
@@ -95,15 +183,21 @@ export function ExcludeFilters({ info, filters, disabled, onChange }: Props) {
       {groups.map(
         group =>
           group.options.length > 0 && (
-            <Box component="fieldset" key={group.key} sx={groupStyle}>
-              <Typography component="legend" sx={{ mb: 0.5 }}>
-                {group.label}
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Box component="fieldset" aria-label={group.label} key={group.key} sx={groupStyle}>
+              {sectionHeading(
+                group.label,
+                () => onChange({ ...filters, [group.key]: [] }),
+                (filters[group.key]?.length ?? 0) > 0
+              )}
+              <Box sx={scrollAreaStyle}>
                 {group.options.map(option => (
                   <FormControlLabel
                     key={option.value}
-                    label={option.label}
+                    label={
+                      <Typography component="span" title={option.label} sx={truncatedLabelStyle}>
+                        {option.label}
+                      </Typography>
+                    }
                     sx={labelStyle}
                     control={
                       <Checkbox
@@ -128,11 +222,13 @@ export function ExcludeFilters({ info, filters, disabled, onChange }: Props) {
           )
       )}
       {ranks.length > 0 && (
-        <Box component="fieldset" sx={groupStyle}>
-          <Typography component="legend" sx={{ mb: 0.5 }}>
-            Rank
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Box component="fieldset" aria-label="Rank" sx={groupStyle}>
+          {sectionHeading(
+            'Rank',
+            () => onChange({ ...filters, exclude_aphia_ids: [] }),
+            excludedTaxa.length > 0
+          )}
+          <Box sx={scrollAreaStyle}>
             {ranks.map(rank => {
               const ids = taxa.filter(taxon => taxon.rank === rank).map(taxon => taxon.aphia_id);
               const included = ids.filter(id => !excludedTaxa.includes(id)).length;
@@ -158,11 +254,13 @@ export function ExcludeFilters({ info, filters, disabled, onChange }: Props) {
         </Box>
       )}
       {taxa.length > 0 && (
-        <Box component="fieldset" sx={groupStyle}>
-          <Typography component="legend" sx={{ mb: 0.5 }}>
-            Scientific Name
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Box component="fieldset" aria-label="Scientific Name" sx={groupStyle}>
+          {sectionHeading(
+            'Scientific Name',
+            () => onChange({ ...filters, exclude_aphia_ids: [] }),
+            excludedTaxa.length > 0
+          )}
+          <Box sx={scrollAreaStyle}>
             {taxa.map(taxon => (
               <FormControlLabel
                 key={taxon.aphia_id}

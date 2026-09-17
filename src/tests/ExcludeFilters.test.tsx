@@ -56,3 +56,62 @@ it('allows reselecting excluded names and resets exclusions when Info is missing
     exclude_aphia_ids: []
   });
 });
+
+it('sorts every section alphabetically and exposes complete set names on hover', () => {
+  render(
+    <ExcludeFilters
+      info={{
+        image_sets: [
+          { uuid: 'z-image', name: 'Zulu image set with a long title' },
+          { uuid: 'a-image', name: 'Alpha image set' }
+        ],
+        annotation_sets: [
+          { uuid: 'z-annotation', name: 'Zulu annotation set' },
+          { uuid: 'a-annotation', name: 'Alpha annotation set' }
+        ],
+        aphia_ids: [
+          { aphia_id: 2, scientific_name: 'Zebra species', rank: 'Species' },
+          { aphia_id: 1, scientific_name: 'Alpha species', rank: 'Family' }
+        ]
+      }}
+      filters={{}}
+      disabled={false}
+      onChange={vi.fn()}
+    />
+  );
+
+  const checkboxNames = screen
+    .getAllByRole('checkbox')
+    .map(checkbox => checkbox.closest('label')?.textContent);
+  expect(checkboxNames).toEqual([
+    'Alpha image set',
+    'Zulu image set with a long title',
+    'Alpha annotation set',
+    'Zulu annotation set',
+    'Family',
+    'Species',
+    'Alpha species',
+    'Zebra species'
+  ]);
+  expect(screen.getByText('Zulu image set with a long title').getAttribute('title')).toBe(
+    'Zulu image set with a long title'
+  );
+});
+
+it('reselects all values in an individual exclusion section', () => {
+  const onChange = vi.fn();
+  render(
+    <ExcludeFilters
+      info={info}
+      filters={{ exclude_image_set: ['image-id'], exclude_aphia_ids: [1, 2] }}
+      disabled={false}
+      onChange={onChange}
+    />
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: 'Select all image set values' }));
+  expect(onChange).toHaveBeenLastCalledWith({ exclude_image_set: [], exclude_aphia_ids: [1, 2] });
+
+  fireEvent.click(screen.getByRole('button', { name: 'Select all rank values' }));
+  expect(onChange).toHaveBeenLastCalledWith({ exclude_image_set: ['image-id'], exclude_aphia_ids: [] });
+});

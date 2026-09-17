@@ -1,6 +1,7 @@
 import { Box, Button, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { SelectField, TextInputField } from 'src/components/annotations-search-form/FormFields';
+import { SearchActionButton } from 'src/components/annotations-search-form/SearchActionButton';
 import type {
   AdditionalFilters as AdditionalFiltersModel,
   Deployment,
@@ -240,23 +241,14 @@ export function AdditionalFilters({
           >
             Clear
           </Button>
-          <Button
+          <SearchActionButton
             type="button"
-            variant="contained"
-            sx={{
-              bgcolor: '#2C2C2C',
-              color: 'white',
-              whiteSpace: 'nowrap',
-              '&:hover': {
-                bgcolor: '#1F1F1F',
-                opacity: 0.9
-              }
-            }}
+            sx={{ whiteSpace: 'nowrap' }}
             disabled={hasBoundErrors}
             onClick={() => onAdditionalFiltersChange(draftToFilters(draftFilters))}
           >
             Update Filter
-          </Button>
+          </SearchActionButton>
         </Box>
       </Box>
 

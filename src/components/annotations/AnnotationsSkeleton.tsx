@@ -46,27 +46,48 @@ export function AnnotationsSkeleton() {
           </Box>
         ))}
       </Box>
-      <Box aria-hidden sx={{ flex: 1, minWidth: 0, width: '100%' }}>
-        <Box sx={{ border: '1px solid', borderColor: 'grey.300', borderRadius: 1, mb: 2 }}>
-          <Typography sx={{ fontWeight: 'bold', px: 2, py: 1.5 }}>
-            Summary of search parameters
-          </Typography>
-          <Box sx={{ px: 2, pb: 2 }}>
-            {[55, 45, 60, 50].map(width => (
-              <Skeleton key={width} width={`${width}%`} height={24} />
-            ))}
-          </Box>
-        </Box>
-        <Typography sx={{ fontWeight: 'bold', mb: 2, color: 'text.secondary' }}>
-          Annotation Data
-        </Typography>
-        <AnnotationCardsSkeleton />
-      </Box>
+      <SearchResultsSkeleton />
     </Box>
   );
 }
 
-export function AnnotationCardsSkeleton() {
+export function SearchResultsSkeleton({ cardCount = 6 }: { cardCount?: number }) {
+  return (
+    <Box
+      role="status"
+      aria-label="Loading search summary and annotation data"
+      aria-busy
+      sx={{
+        flex: 1,
+        minWidth: 0,
+        width: '100%',
+        '@media (prefers-reduced-motion: reduce)': {
+          '& .MuiSkeleton-root': { animation: 'none' }
+        }
+      }}
+    >
+      <Box
+        aria-hidden
+        sx={{ border: '1px solid', borderColor: 'grey.300', borderRadius: 1, mb: 2 }}
+      >
+        <Typography sx={{ fontWeight: 'bold', px: 2, py: 1.5 }}>
+          Summary of search parameters
+        </Typography>
+        <Box sx={{ px: 2, pb: 2 }}>
+          {[55, 45, 60, 50].map(width => (
+            <Skeleton key={width} width={`${width}%`} height={24} />
+          ))}
+        </Box>
+      </Box>
+      <Typography aria-hidden sx={{ fontWeight: 'bold', mb: 2, color: 'text.secondary' }}>
+        Annotation Data
+      </Typography>
+      <AnnotationCardsSkeleton count={cardCount} />
+    </Box>
+  );
+}
+
+export function AnnotationCardsSkeleton({ count = 6 }: { count?: number }) {
   return (
     <Box
       role="status"
@@ -78,7 +99,7 @@ export function AnnotationCardsSkeleton() {
       }}
     >
       <Grid container spacing={3} aria-hidden>
-        {Array.from({ length: 6 }, (_, index) => (
+        {Array.from({ length: count }, (_, index) => (
           <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={index}>
             <Box sx={{ border: '1px solid', borderColor: 'grey.300', borderRadius: 1, p: 1.5 }}>
               <Skeleton variant="rounded" height={160} />

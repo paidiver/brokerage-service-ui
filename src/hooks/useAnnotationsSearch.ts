@@ -101,6 +101,7 @@ export function useAnnotationsSearch() {
   const [summary, setSummary] = useState<AnnotationSummary | null>(null);
   const [info, setInfo] = useState<AnnotationSearchInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshingResults, setIsRefreshingResults] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +128,8 @@ export function useAnnotationsSearch() {
   const [additionalFilters, setAdditionalFilters] = useState<AdditionalFilters>({});
 
   const resetResults = (retainInfo = false) => {
-    if (!retainInfo) setInfo(null);
+    if (retainInfo) return;
+    setInfo(null);
     setAnnotations([]);
     setSummary(null);
     setCount(0);
@@ -158,6 +160,7 @@ export function useAnnotationsSearch() {
     lastTask.current = params;
     setAppliedParams(params);
     setHasSearched(true);
+    setIsRefreshingResults(reset && retainInfo);
     if (reset) resetResults(retainInfo);
     if (!existing) clearStoredSearch();
     updateLocation(params, mode);
@@ -293,6 +296,7 @@ export function useAnnotationsSearch() {
     } finally {
       if (!controller.signal.aborted) {
         setIsLoading(false);
+        setIsRefreshingResults(false);
         setPreparing(null);
       }
     }
@@ -413,7 +417,14 @@ export function useAnnotationsSearch() {
 
   const searchThisArea = async (area: MapArea) => {
     if (!appliedParams || isLoading) return;
-    await loadData({ ...appliedParams, ...area, page: 1, add_summary: true, add_info: true });
+    await loadData(
+      { ...appliedParams, ...area, page: 1, add_summary: true, add_info: true },
+      null,
+      'push',
+      true,
+      session.current?.terms,
+      true
+    );
   };
 
   const applyExcludeFilters = async (filters: ExcludeFilters) => {
@@ -562,6 +573,7 @@ export function useAnnotationsSearch() {
     } satisfies ExcludeFilters,
     applyExcludeFilters,
     isLoading,
+    isRefreshingResults,
     currentPage,
     totalPages,
     pageSize,

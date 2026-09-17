@@ -65,15 +65,6 @@ export function AnnotationsSearchForm({
   onAdditionalFiltersChange
 }: AnnotationsSearchFormProps) {
   const copied = shareMessage?.startsWith('Search link copied') ?? false;
-  const buttonSx = {
-    color: 'white',
-    bgcolor: '#2C2C2C',
-    '&:hover': {
-      bgcolor: '#1F1F1F',
-      opacity: 0.9
-    }
-  };
-
   const [showAdditionalFilters, setShowAdditionalFilters] = useState(false);
   const activeFilterCount = Object.values(additionalFilters).filter(value =>
     typeof value === 'number'
@@ -112,11 +103,10 @@ export function AnnotationsSearchForm({
               sx={
                 activeFilterCount > 0
                   ? {
-                      ...buttonSx,
                       bgcolor: 'primary.main',
                       '&:hover': { bgcolor: 'primary.dark' }
                     }
-                  : buttonSx
+                  : undefined
               }
               onClick={() => setShowAdditionalFilters(!showAdditionalFilters)}
             />
@@ -133,9 +123,7 @@ export function AnnotationsSearchForm({
           onRemoveSearchTerm={onRemoveSearchTerm}
           onSelectOption={onSelectWormsOption}
         />
-        <SearchActionButton sx={{ ...buttonSx, color: 'white' }} type="submit">
-          Search
-        </SearchActionButton>
+        <SearchActionButton type="submit">Search</SearchActionButton>
         <IncludeDescendantsToggle
           checked={includeDescendants}
           onChange={onIncludeDescendantsChange}
@@ -158,7 +146,6 @@ export function AnnotationsSearchForm({
                 ariaLabel={copied ? 'Search URL copied' : 'Share search'}
                 iconOnly
                 type="button"
-                sx={{ ...buttonSx, minWidth: 5, padding: 1 }}
                 disabled={!shareUrl}
                 onClick={onShare}
               >
@@ -172,7 +159,6 @@ export function AnnotationsSearchForm({
                 ariaLabel="Clear scientific or common name"
                 iconOnly
                 type="button"
-                sx={{ ...buttonSx, minWidth: 5, padding: 1 }}
                 onClick={onClearNames}
               >
                 <DeleteOutlinedIcon />

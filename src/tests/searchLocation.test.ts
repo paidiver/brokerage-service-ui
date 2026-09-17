@@ -40,8 +40,17 @@ describe('shareable search parameters', () => {
       marine_zone: 'sea surface' as const
     };
     expect(readSearch(searchQuery(params))).toEqual(params);
+    expect(searchQuery(params).getAll('exclude_aphia_ids[]')).toEqual(['3']);
+    expect(searchQuery(params).has('exclude_aphia_ids')).toBe(false);
     expect(searchSignature(params)).toBe(searchSignature({ ...params, page: 1 }));
     expect(searchUrl(params)).not.toContain('search_id');
+  });
+
+  it('continues to read legacy unbracketed Aphia ID exclusions', () => {
+    expect(readSearch(new URLSearchParams('name_part=cod&exclude_aphia_ids=3'))).toMatchObject({
+      name_part: 'cod',
+      exclude_aphia_ids: [3]
+    });
   });
 
   it.each([
