@@ -6,16 +6,20 @@ import type {
 import type { SourceConfig, SourceInfo } from 'src/models/sources';
 import type { TaxonWormsLike } from 'src/models/taxanomies';
 
-interface ResultsMetadata {
-  total_results: number;
-  results_from_individual_sources: Record<string, number>;
-}
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
   previous: string | null;
-  result_metadata: ResultsMetadata;
-  results: T;
+  results: T[];
+}
+
+export interface ProblemDetails {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+  code: string;
+  errors?: { field: string; message: string }[];
 }
 
 export interface UpstreamError {
@@ -34,22 +38,20 @@ export interface UpstreamResponse<ResponseDataT> {
   error?: UpstreamError | null;
 }
 
-export interface TaxaBulkResponse {
-  results: UpstreamResponse<TaxonWormsLike[]>[];
-}
+export type TaxaBulkResponse = PaginatedResponse<TaxonWormsLike>;
 
 export interface HealthCheckResponse {
   status: string;
 }
 
-export interface SourcesInfoResponse {
-  sources: SourceInfo[];
-}
+export type SourcesInfoResponse = PaginatedResponse<SourceInfo>;
 
-export type AnnotationsSearchResponse = PaginatedResponse<AnnotationSearchResponseResults>;
-
-export interface AnnotationSearchResponseResults {
+export interface SearchMetadata {
   info?: AnnotationSearchInfo | null;
   summary?: AnnotationSummary | null;
-  annotations: AnnotationRecord[];
+  source_counts: Record<string, number>;
+}
+
+export interface AnnotationsSearchResponse extends PaginatedResponse<AnnotationRecord> {
+  meta: SearchMetadata;
 }

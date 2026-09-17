@@ -51,7 +51,7 @@ export default function Home() {
 
   const isInitialLoading = isLoading && annotations.length === 0;
 
-  const { wormsOptions, wormsLoading } = useWormsAutocomplete(searchInput);
+  const { wormsOptions, wormsLoading, wormsError } = useWormsAutocomplete(searchInput);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -69,6 +69,7 @@ export default function Home() {
         onIncludeDescendantsChange={setIncludeDescendants}
         wormsOptions={wormsOptions}
         wormsLoading={wormsLoading}
+        wormsError={wormsError}
         onSelectWormsOption={selectWormsOption}
         onSubmit={submitSearch}
         selectedSources={selectedSources}

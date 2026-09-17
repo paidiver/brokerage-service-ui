@@ -7,12 +7,14 @@ import { TaxonWormsLikeItem, TaxonWormsLikeResponse } from 'src/models/taxanomie
 interface UseWormsAutocompleteReturn {
   wormsOptions: TaxonWormsLikeItem[];
   wormsLoading: boolean;
+  wormsError: string | null;
   clearWormsOptions: () => void;
 }
 
 export function useWormsAutocomplete(searchInput: string): UseWormsAutocompleteReturn {
   const [wormsOptions, setWormsOptions] = useState<TaxonWormsLikeItem[]>([]);
   const [wormsLoading, setWormsLoading] = useState(false);
+  const [wormsError, setWormsError] = useState<string | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -22,15 +24,18 @@ export function useWormsAutocomplete(searchInput: string): UseWormsAutocompleteR
 
       if (term.length < 3) {
         setWormsOptions([]);
+        setWormsError(null);
+        setWormsLoading(false);
         return;
       }
 
       try {
         setWormsLoading(true);
+        setWormsError(null);
 
         const results = await apiRequest<TaxonWormsLikeResponse>({
           method: 'GET',
-          url: `/taxonomy/worms/taxa/${term}`
+          url: `/taxonomy/worms/taxa/${encodeURIComponent(term)}`
         });
 
         if (isActive) {
@@ -40,6 +45,7 @@ export function useWormsAutocomplete(searchInput: string): UseWormsAutocompleteR
         console.error('Failed to fetch WoRMS options:', error);
         if (isActive) {
           setWormsOptions([]);
+          setWormsError('Taxonomy suggestions are unavailable. Please try again.');
         }
       } finally {
         if (isActive) {
@@ -59,6 +65,7 @@ export function useWormsAutocomplete(searchInput: string): UseWormsAutocompleteR
   return {
     wormsOptions,
     wormsLoading,
+    wormsError,
     clearWormsOptions: () => setWormsOptions([])
   };
 }

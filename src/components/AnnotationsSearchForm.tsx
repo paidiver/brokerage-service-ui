@@ -30,6 +30,7 @@ interface AnnotationsSearchFormProps {
 
   wormsOptions: TaxonWormsLikeItem[];
   wormsLoading: boolean;
+  wormsError?: string | null;
   onSelectWormsOption: (item: TaxonWormsLikeItem) => void;
 
   onSubmit: () => Promise<void> | void;
@@ -55,6 +56,7 @@ export function AnnotationsSearchForm({
   onIncludeDescendantsChange,
   wormsOptions,
   wormsLoading,
+  wormsError,
   onSelectWormsOption,
   onSubmit,
   selectedSources,
@@ -124,6 +126,7 @@ export function AnnotationsSearchForm({
           chipLabels={chipLabels}
           inputValue={searchInput}
           loading={wormsLoading}
+          error={wormsError}
           options={wormsOptions}
           onInputChange={onSearchInputChange}
           onInputKeyDown={onSearchInputKeyDown}

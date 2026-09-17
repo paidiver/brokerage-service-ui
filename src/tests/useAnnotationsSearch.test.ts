@@ -16,30 +16,36 @@ const expires = () => new Date(Date.now() + 1800000).toISOString();
 const response = (page = 1, uuid = 'first', count = 1360) =>
   ({
     data: {
-      search_id: id,
-      page,
-      page_size: 20,
       count,
-      total_pages: Math.ceil(count / 20),
-      generated_through_page: page,
-      expires_at: expires(),
-      source_counts: { bodc: count },
       next: null,
       previous: null,
-      result_metadata: { total_results: count, results_from_individual_sources: { bodc: count } },
-      results: { annotations: [{ uuid }], summary: null }
+      results: [{ uuid }],
+      meta: {
+        search_id: id,
+        page,
+        page_size: 20,
+        total_pages: Math.ceil(count / 20),
+        generated_through_page: page,
+        expires_at: expires(),
+        source_counts: { bodc: count },
+        summary: null
+      }
     },
     retryAfter: 1000
   }) as unknown as Awaited<ReturnType<typeof sessionRequest>>;
 const pending = (page = 68) => ({
   data: {
-    search_id: id,
-    page,
     count: 1360,
-    total_pages: 68,
-    generated_through_page: 10,
-    expires_at: expires(),
-    status: 'preparing' as const
+    status: 'preparing' as const,
+    meta: {
+      search_id: id,
+      page,
+      page_size: 20,
+      total_pages: 68,
+      generated_through_page: 10,
+      expires_at: expires(),
+      source_counts: { bodc: 1360 }
+    }
   },
   retryAfter: 1000
 });
@@ -72,6 +78,19 @@ async function start() {
 }
 
 describe('search sessions', () => {
+  it('restores a shared search without counting search settings as additional filters', async () => {
+    window.history.replaceState(
+      null,
+      '',
+      '/?search=1&aphia_ids=1360&sources=bodc&sources=jncc&order_by=annotation_creation_datetime&page=1&page_size=20&include_descendants=false&add_summary=true&add_info=true'
+    );
+    request.mockResolvedValue(response());
+    const { result } = renderHook(() => useAnnotationsSearch());
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(1));
+    expect(result.current.additionalFilters).toEqual({});
+    expect(result.current.selectedSources).toEqual(['bodc', 'jncc']);
+  });
+
   it('creates searches with submitted filters and navigates using only session ID', async () => {
     request.mockImplementation(async config =>
       response(Number(config.url?.split('/').at(-1)) || 1)
@@ -194,7 +213,7 @@ describe('search sessions', () => {
     await act(() => result.current.retrySearch());
     expect(result.current.currentPage).toBe(2);
     request.mockRejectedValueOnce({
-      response: { status: 410, data: { detail: { code: 'search_session_expired' } } }
+      response: { status: 410, data: { code: 'search_session_expired' } }
     });
     await act(() => result.current.goToPage(3));
     expect(result.current.errorAction).toBe('restart');
@@ -231,7 +250,7 @@ describe('search sessions', () => {
       method: 'POST',
       data: { name_part: 'crab', page: 1, sources: ['jncc'], min_lat: 10, max_lat: 20 }
     });
-    expect(result.current.additionalFilters).toMatchObject({ min_lat: 10, max_lat: 20 });
+    expect(result.current.additionalFilters).toEqual({ min_lat: 10, max_lat: 20 });
     expect(result.current.selectedSources).toEqual(['jncc']);
   });
 
@@ -310,7 +329,7 @@ it('waits and retries when another worker is preparing the session', async () =>
       response: {
         status: 409,
         headers: { 'retry-after': '2' },
-        data: { detail: { code: 'search_session_busy' } }
+        data: { code: 'search_session_busy' }
       }
     })
     .mockResolvedValueOnce(response(2));
@@ -348,7 +367,7 @@ it('cancels a pending poll when the component unmounts', async () => {
 
 it('handles empty searches and ignores invalid page navigation', async () => {
   const empty = response(1, 'unused', 0);
-  if (!('status' in empty.data)) empty.data.results.annotations = [];
+  if (!('status' in empty.data)) empty.data.results = [];
   request.mockResolvedValue(empty);
   const { result } = await start();
   expect(result.current.totalPages).toBe(0);
@@ -364,7 +383,7 @@ it('applies exclusions to the full search, preserves options, and clears them fo
     annotation_sets: [{ uuid: id, name: 'Survey annotations' }],
     aphia_ids: [{ aphia_id: 126436, scientific_name: 'Gadus morhua', rank: 'Species' }]
   };
-  if (!('status' in initial.data)) initial.data.results.info = info;
+  if (!('status' in initial.data)) initial.data.meta.info = info;
   request.mockResolvedValueOnce(initial).mockResolvedValue(response(1, 'filtered', 12));
   const { result } = await start();
   act(() => result.current.setSearchInput('unsubmitted draft'));

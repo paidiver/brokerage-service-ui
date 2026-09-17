@@ -6,7 +6,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import MockAdapter from 'axios-mock-adapter';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { apiClient } from '../api/apiClient'
+import { apiClient } from '../api/apiClient';
 import { useApiRequest } from '../hooks/useApiRequest';
 
 const mock = new MockAdapter(apiClient);
@@ -25,9 +25,9 @@ describe('useApiRequest', () => {
   });
 
   it('sets status to loading immediately after makeRequest is called', () => {
-    mock.onGet('/sources').reply(200, { sources: [{ source_name: 'bodc' }] });
+    mock.onGet('/sources').reply(200, { results: [{ source_name: 'bodc' }] });
 
-    const { result } = renderHook(() => useApiRequest<{ sources: unknown[] }>());
+    const { result } = renderHook(() => useApiRequest<{ results: unknown[] }>());
 
     act(() => {
       result.current.makeRequest({ method: 'GET', url: '/sources' });
@@ -39,10 +39,10 @@ describe('useApiRequest', () => {
 
   it('transitions to success with data when the response is non-empty', async () => {
     mock.onGet('/sources').reply(200, {
-      sources: [{ source_name: 'bodc' }, { source_name: 'jncc' }],
+      results: [{ source_name: 'bodc' }, { source_name: 'jncc' }]
     });
 
-    const { result } = renderHook(() => useApiRequest<{ sources: unknown[] }>());
+    const { result } = renderHook(() => useApiRequest<{ results: unknown[] }>());
 
     act(() => {
       result.current.makeRequest({ method: 'GET', url: '/sources' });
@@ -50,14 +50,14 @@ describe('useApiRequest', () => {
 
     await waitFor(() => expect(result.current.status).toBe('success'));
 
-    expect(result.current.data?.sources).toHaveLength(2);
+    expect(result.current.data?.results).toHaveLength(2);
     expect(result.current.error).toBeNull();
   });
 
   it('transitions to empty when the response array is empty', async () => {
-    mock.onGet('/sources').reply(200, { sources: [] });
+    mock.onGet('/sources').reply(200, { results: [] });
 
-    const { result } = renderHook(() => useApiRequest<{ sources: unknown[] }>());
+    const { result } = renderHook(() => useApiRequest<{ results: unknown[] }>());
 
     act(() => {
       result.current.makeRequest({ method: 'GET', url: '/sources' });
@@ -65,7 +65,7 @@ describe('useApiRequest', () => {
 
     await waitFor(() => expect(result.current.status).toBe('empty'));
 
-    expect(result.current.data?.sources).toHaveLength(0);
+    expect(result.current.data?.results).toHaveLength(0);
     expect(result.current.error).toBeNull();
   });
 
@@ -108,5 +108,4 @@ describe('useApiRequest', () => {
 
     expect(result.current.error).toBe('Something went wrong. Please try again later.');
   });
-
 });

@@ -6,6 +6,7 @@ interface TaxonAutocompleteFieldProps {
   chipLabels: string[];
   inputValue: string;
   loading: boolean;
+  error?: string | null;
   options: TaxonWormsLikeItem[];
   onInputChange: (value: string) => void;
   onInputKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
@@ -17,6 +18,7 @@ export function TaxonAutocompleteField({
   chipLabels,
   inputValue,
   loading,
+  error,
   options,
   onInputChange,
   onInputKeyDown,
@@ -29,6 +31,7 @@ export function TaxonAutocompleteField({
         fullWidth
         options={options}
         loading={loading}
+        noOptionsText={error ?? 'No matching taxa'}
         inputValue={inputValue}
         value={null}
         openOnFocus
@@ -62,6 +65,8 @@ export function TaxonAutocompleteField({
             <TextField
               {...params}
               label="Scientific or common name"
+              error={Boolean(error)}
+              helperText={error}
               size="small"
               variant="outlined"
               sx={{
