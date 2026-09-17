@@ -15,12 +15,16 @@ export const AppWrapper = ({ children }: { children: ReactNode }) => {
             <Box
               sx={{
                 display: 'flex',
-                marginTop: 'auto',
-                marginBottom: 'auto',
+                alignItems: 'center',
+                justifyContent: 'center',
                 paddingRight: '15px',
-                gap: '10px'
+                gap: '10px',
+                fontWeight: 'bold',
+                fontSize: '1.5rem'
               }}
-            />
+            >
+              PAIDIVER BROKERAGE SERVICE
+            </Box>
           }
         />
         <Container component="main" id="app-container" sx={{ py: 3 }}>
