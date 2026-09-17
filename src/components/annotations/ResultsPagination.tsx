@@ -42,7 +42,7 @@ export function ResultsPagination({
     minWidth: { xs: 24, sm: 28 },
     height: 32,
     px: 0.75,
-    color: '#2C2C2C',
+    color: 'grey.800',
     fontSize: 13,
     textTransform: 'none' as const,
     borderRadius: 1,
@@ -87,10 +87,14 @@ export function ResultsPagination({
                 sx={{
                   ...buttonSx,
                   ...(item === page && {
-                    bgcolor: '#2C2C2C',
-                    color: '#fff',
-                    '&:hover': { bgcolor: '#1F1F1F' },
-                    '&.Mui-disabled': { bgcolor: '#2C2C2C', color: '#fff', opacity: 0.55 }
+                    bgcolor: 'grey.800',
+                    color: 'common.white',
+                    '&:hover': { bgcolor: 'grey.900' },
+                    '&.Mui-disabled': {
+                      bgcolor: 'grey.800',
+                      color: 'common.white',
+                      opacity: 0.55
+                    }
                   })
                 }}
               >

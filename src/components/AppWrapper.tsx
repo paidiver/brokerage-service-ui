@@ -2,22 +2,9 @@
 
 import { BodcNavbar } from '@bodc/navbar';
 import { Box, Container } from '@mui/material';
-import { createTheme,ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { ReactNode } from 'react';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#00b5ff'
-    },
-    secondary: {
-      main: '#6c757d'
-    }
-  },
-  typography: {
-    fontFamily: 'Roboto, Arial, sans-serif'
-  }
-});
+import { theme } from 'src/theme';
 
 export const AppWrapper = ({ children }: { children: ReactNode }) => {
   return (
@@ -25,16 +12,15 @@ export const AppWrapper = ({ children }: { children: ReactNode }) => {
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <BodcNavbar
           content={
-            <div
-              style={{
+            <Box
+              sx={{
                 display: 'flex',
                 marginTop: 'auto',
                 marginBottom: 'auto',
                 paddingRight: '15px',
                 gap: '10px'
               }}
-            >
-            </div>
+            />
           }
         />
         <Container component="main" id="app-container" sx={{ py: 3 }}>

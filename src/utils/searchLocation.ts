@@ -32,20 +32,23 @@ const boolKeys = [
   'return_image_annotation_name_info'
 ];
 const keys = [...listKeys, ...stringKeys, ...numberKeys, ...boolKeys];
+const queryKey = (key: string) => (key === 'exclude_aphia_ids' ? 'exclude_aphia_ids[]' : key);
 
 export function searchQuery(params: SearchParams): URLSearchParams {
   const query = new URLSearchParams({ search: '1' });
   const data = params as unknown as Record<string, unknown>;
   for (const key of keys) {
     const value = data[key];
-    if (Array.isArray(value)) value.forEach(item => query.append(key, String(item)));
-    else if (value !== undefined) query.set(key, String(value));
+    const outputKey = queryKey(key);
+    if (Array.isArray(value)) value.forEach(item => query.append(outputKey, String(item)));
+    else if (value !== undefined) query.set(outputKey, String(value));
   }
   return query;
 }
 
 export function readSearch(query: URLSearchParams): SearchParams | null {
-  if (!query.has('search') && !keys.some(key => query.has(key))) return null;
+  if (!query.has('search') && !keys.some(key => query.has(key) || query.has(queryKey(key))))
+    return null;
   const result: Record<string, unknown> = {
     page: 1,
     page_size: 20,
@@ -59,8 +62,8 @@ export function readSearch(query: URLSearchParams): SearchParams | null {
     );
   };
   for (const key of keys) {
-    if (!query.has(key)) continue;
-    const values = query.getAll(key);
+    const values = [...query.getAll(queryKey(key)), ...(queryKey(key) === key ? [] : query.getAll(key))];
+    if (values.length === 0) continue;
     const value = values[0];
     if (listKeys.includes(key)) {
       if (values.some(item => !item.trim())) invalid();
@@ -120,7 +123,10 @@ export function searchSignature(params: SearchParams): string {
 
 export function searchUrl(params: SearchParams): string {
   const url = new URL(window.location.href);
-  ['search', ...keys].forEach(key => url.searchParams.delete(key));
+  ['search', ...keys].forEach(key => {
+    url.searchParams.delete(key);
+    url.searchParams.delete(queryKey(key));
+  });
   searchQuery(params).forEach((value, key) => url.searchParams.append(key, value));
   return url.toString();
 }

@@ -14,16 +14,6 @@ interface SearchActionButtonProps {
   type?: ButtonHTMLAttributes<HTMLButtonElement>['type'];
 }
 
-interface SearchActionButtonProps {
-  ariaLabel?: string;
-  children?: ReactNode;
-  iconOnly?: boolean;
-  disabled?: boolean;
-  sx?: SxProps<Theme>;
-  onClick?: () => void;
-  type?: ButtonHTMLAttributes<HTMLButtonElement>['type'];
-}
-
 export function SearchActionButton({
   ariaLabel,
   children,
@@ -34,13 +24,28 @@ export function SearchActionButton({
   onClick,
   type = 'submit'
 }: SearchActionButtonProps) {
+  const baseSx: SxProps<Theme> = {
+    color: 'common.white',
+    bgcolor: 'grey.800',
+    ...(iconOnly && {
+      minWidth: 32,
+      width: 32,
+      height: 32,
+      p: 0.5
+    }),
+    '&:hover': {
+      bgcolor: 'grey.900',
+      opacity: 0.9
+    }
+  };
+
   return (
     <Button
       aria-label={ariaLabel}
       disabled={disabled}
       variant="contained"
       type={type}
-      sx={sx}
+      sx={[baseSx, ...(Array.isArray(sx) ? sx : [sx])].filter(Boolean) as SxProps<Theme>}
       onClick={onClick}
       size={size}
     >

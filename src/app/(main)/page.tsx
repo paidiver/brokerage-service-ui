@@ -25,6 +25,7 @@ export default function Home() {
     goToPage,
     searchThisArea,
     isLoading,
+    isRefreshingResults,
     error,
     preparing,
     errorAction,
@@ -49,7 +50,7 @@ export default function Home() {
     setAdditionalFilters
   } = useAnnotationsSearch();
 
-  const isInitialLoading = isLoading && annotations.length === 0;
+  const isInitialLoading = isLoading && info === null;
 
   const { wormsOptions, wormsLoading, wormsError } = useWormsAutocomplete(searchInput);
 
@@ -112,7 +113,7 @@ export default function Home() {
           flexDirection: { xs: 'column', md: 'row' }
         }}
       >
-        {annotations.length > 0 && (
+        {info !== null && (
           <ExcludeFilters
             info={info}
             filters={excludeFilters}
@@ -132,6 +133,7 @@ export default function Home() {
             onPageChange={goToPage}
             onSearchArea={searchThisArea}
             isLoading={isLoading}
+            isRefreshingResults={isRefreshingResults}
           />
         </Box>
       </Box>

@@ -396,7 +396,7 @@ it('applies exclusions to the full search, preserves options, and clears them fo
   });
   expect(result.current.count).toBe(12);
   expect(result.current.info).toEqual(info);
-  expect(result.current.shareUrl).toContain('exclude_aphia_ids=126436');
+  expect(result.current.shareUrl).toContain('exclude_aphia_ids%5B%5D=126436');
   await act(() =>
     result.current.applyExcludeFilters({ exclude_image_set: [], exclude_aphia_ids: [] })
   );
