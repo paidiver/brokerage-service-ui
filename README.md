@@ -35,7 +35,9 @@ cp .env.example .env
 Example contents:
 
 ```bash
-NEXT_PUBLIC_BROKERAGE_SERVICE_API=https://brokerage-service.paidiver.site
+NEXT_PUBLIC_BROKERAGE_SERVICE_API=https://paidiver-brokerage-service.noc.ac.uk
+# Optional MapLibre style URL; defaults to OpenFreeMap Liberty.
+NEXT_PUBLIC_MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
 ```
 
 You can adjust these values as needed to point to your local or remote services.
