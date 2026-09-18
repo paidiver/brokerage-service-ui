@@ -6,12 +6,22 @@ The live UI is packaged as a standalone Next.js server and deployed with Helmfil
 
 - Pull requests build the server image and lint the Helm chart.
 - Pushes to `main` deploy the static export to GitHub Pages.
-- A `vMAJOR.MINOR.PATCH` tag publishes the matching GHCR image and Helm chart release.
+- A `vMAJOR.MINOR.PATCH` tag publishes the matching GHCR image and OCI Helm chart.
 - A `docker-vMAJOR.MINOR.PATCH` tag publishes both artifacts using the API repository's manual-tag convention.
 
 The API URL is runtime-configurable. Helm sets `env.brokerageServiceApiUrl`, and the container publishes it to the browser through `/runtime-config.js` when the pod starts. Changing the URL does not require rebuilding the image.
 
 The map style remains a Docker build argument named `NEXT_PUBLIC_MAP_STYLE_URL`.
+
+Helm charts are published to `oci://ghcr.io/paidiver/charts/brokerage-service-ui`. They do not use the `gh-pages` branch, leaving GitHub Pages exclusively for the static UI.
+
+Install a published chart with:
+
+```bash
+helm install brokerage-service-ui \
+  oci://ghcr.io/paidiver/charts/brokerage-service-ui \
+  --version 1.2.3
+```
 
 ## Live deployment
 

@@ -7,7 +7,7 @@ environments:
       - namespace: {{ env "NAMESPACE" | default "paidiver-st3" | quote }}
       - clusterIssuerName: {{ env "CLUSTER_ISSUER_NAME" | default "letsencrypt-brokerage-service-ui" | quote }}
       - ghcrSecretName: {{ env "GHCR_SECRET_NAME" | default "brokerage-service-ui-ghcr-pull-secret" | quote }}
-
+      - chartVersion: "0.0.1"
 ---
 
 {{ $env := .Environment.Values }}
@@ -27,7 +27,7 @@ releases:
       - env/live/values.yaml
       - image:
           imagePullSecret: {{ $env.ghcrSecretName | quote }}
-          tag: {{ env "IMAGE_TAG" | default "latest" | quote }}
+          tag: "v0.0.1"
     hooks:
       - events: ["presync"]
         showlogs: true
@@ -62,4 +62,3 @@ releases:
               -o yaml | kubectl apply -f -
 
             sed "s/__CLUSTER_ISSUER_NAME__/${cluster_issuer_name}/g" utils/cluster-issuer.yaml | kubectl apply -f -
-

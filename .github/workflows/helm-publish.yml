@@ -5,15 +5,44 @@ on:
     tags: ['v*']
 
 concurrency:
-  group: gh-pages
+  group: helm-oci-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   release:
+    runs-on: ubuntu-latest
     permissions:
-      contents: write
-    uses: paidiver/brokerage-service/.github/workflows/reusable-helm-publish.yml@main
-    with:
-      chart_file: deployment/charts/ui/Chart.yaml
-      charts_dir: deployment/charts
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
 
+      - uses: azure/setup-helm@v4
+
+      - name: Select chart version
+        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]]; then
+            echo "Tag does not contain a valid semantic version: $version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GHCR_TOKEN" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
+
+      - name: Package and publish Helm chart
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p dist
+          helm package deployment/charts/ui \
+            --version "$VERSION" \
+            --app-version "$VERSION" \
+            --destination dist
+          helm push "dist/brokerage-service-ui-${VERSION}.tgz" oci://ghcr.io/paidiver/charts
