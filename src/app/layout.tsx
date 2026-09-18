@@ -2,12 +2,15 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import '../globals.css';
 
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import React, { Suspense } from 'react';
 import { AppWrapper } from 'src/components/AppWrapper';
 
 export const metadata: Metadata = {
   title: 'Brokerage Service'
 };
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Suspense>
       </head>
       <body>
+        <Script src={`${basePath}/runtime-config.js`} strategy="beforeInteractive" />
         <AppWrapper>{children}</AppWrapper>
       </body>
     </html>

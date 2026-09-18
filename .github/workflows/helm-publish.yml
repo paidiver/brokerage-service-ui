@@ -1,0 +1,19 @@
+name: Release Helm Charts
+
+on:
+  push:
+    tags: ['v*']
+
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    uses: paidiver/brokerage-service/.github/workflows/reusable-helm-publish.yml@main
+    with:
+      chart_file: deployment/charts/ui/Chart.yaml
+      charts_dir: deployment/charts
+

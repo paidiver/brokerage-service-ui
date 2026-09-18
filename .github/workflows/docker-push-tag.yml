@@ -1,0 +1,30 @@
+name: Release Docker Image (Manual Tag)
+
+on:
+  push:
+    tags: ['docker-v*']
+
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
+jobs:
+  docker:
+    permissions:
+      contents: read
+      packages: write
+    uses: paidiver/brokerage-service/.github/workflows/reusable-docker-push.yml@main
+    with:
+      tag_prefix: docker-v
+
+  helm:
+    needs: docker
+    permissions:
+      contents: write
+    uses: paidiver/brokerage-service/.github/workflows/reusable-helm-publish.yml@main
+    with:
+      chart_file: deployment/charts/ui/Chart.yaml
+      charts_dir: deployment/charts
+      tag_prefix: docker-v
+      release_name_template: "docker-v{{ .Version }}"
+

@@ -11,8 +11,8 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { ReactNode, useEffect, useState } from 'react';
-import { SOURCE_LABEL } from 'src/constants';
 import { SearchActionButton } from 'src/components/annotations-search-form/SearchActionButton';
+import { SOURCE_LABEL } from 'src/constants';
 import { AnnotationRecord } from 'src/models/annotations';
 import { blueScrollbarSx } from 'src/styles/scrollbars';
 

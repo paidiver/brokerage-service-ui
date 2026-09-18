@@ -23,6 +23,9 @@ concurrency:
   group: 'pages'
   cancel-in-progress: false
 
+env:
+  NEXT_PUBLIC_BROKERAGE_SERVICE_API: https://api.paidiver-brokerage-service.noc.ac.uk/api
+
 jobs:
   # Build job
   build:
@@ -34,8 +37,8 @@ jobs:
 
       - name: Setup Environment variables
         run: |
-          echo "NEXT_PUBLIC_BROKERAGE_SERVICE_API=${{ vars.NEXT_PUBLIC_BROKERAGE_SERVICE_API}}" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_BASE_PATH=/${{ github.event.repository.name }}" >> $GITHUB_ENV
+          echo "STATIC_EXPORT=true" >> $GITHUB_ENV
 
       - name: Detect package manager
         id: detect-package-manager
@@ -61,15 +64,6 @@ jobs:
           node-version: '20'
           cache: ${{ steps.detect-package-manager.outputs.manager }}
 
-      # - name: Setup Pages
-      #   uses: actions/configure-pages@v5
-      #   with:
-      # Automatically inject basePath in your Next.js configuration file and disable
-      # server side image optimization (https://nextjs.org/docs/api-reference/next/image#unoptimized).
-      #
-      # You may remove this line if you want to manage the configuration yourself.
-      # static_site_generator: next
-
       - name: Restore cache
         uses: actions/cache@v4
         with:
@@ -83,6 +77,19 @@ jobs:
 
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+
+      - name: Create runtime configuration
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            const config = {
+              brokerageServiceApiUrl: process.env.NEXT_PUBLIC_BROKERAGE_SERVICE_API
+            };
+            fs.writeFileSync(
+              "public/runtime-config.js",
+              `window.__BROKERAGE_SERVICE_CONFIG__ = ${JSON.stringify(config)};\n`
+            );
+          '
 
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build

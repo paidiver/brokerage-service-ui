@@ -1,0 +1,45 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/paidiver/brokerage-service-ui
+  tag: latest
+  pullPolicy: IfNotPresent
+  imagePullSecret: ""
+
+container:
+  port: 3000
+
+componentName: brokerage-service-ui
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+securityContext:
+  runAsUser: 1000
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 20m
+    memory: 32Mi
+
+ingress:
+  enabled: false
+
+env:
+  brokerageServiceApiUrl: https://brokerage-service-api.paidiver.site

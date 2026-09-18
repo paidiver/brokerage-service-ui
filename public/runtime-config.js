@@ -1,0 +1,2 @@
+window.__BROKERAGE_SERVICE_CONFIG__ = window.__BROKERAGE_SERVICE_CONFIG__ || {};
+

@@ -1,0 +1,10 @@
+services:
+  ui:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        NEXT_PUBLIC_BROKERAGE_SERVICE_API: ${NEXT_PUBLIC_BROKERAGE_SERVICE_API:-https://brokerage-service-api.paidiver.site}
+        NEXT_PUBLIC_MAP_STYLE_URL: ${NEXT_PUBLIC_MAP_STYLE_URL:-https://tiles.openfreemap.org/styles/liberty}
+    ports:
+      - "3000:3000"

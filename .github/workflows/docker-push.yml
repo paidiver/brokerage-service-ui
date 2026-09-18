@@ -1,0 +1,13 @@
+name: Push Docker Image
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build-and-push-ui:
+    permissions:
+      contents: read
+      packages: write
+    uses: paidiver/brokerage-service/.github/workflows/reusable-docker-push.yml@main
+

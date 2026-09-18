@@ -1,0 +1,22 @@
+# Default values for brokerage-service-ui.
+ingress:
+  enabled: true
+  path: ''
+  pathType: Prefix
+  ingressClassName: nginx
+
+image:
+  repository: ghcr.io/paidiver/brokerage-service-ui
+  pullPolicy: IfNotPresent
+  imagePullSecret: brokerage-service-ui-ghcr-pull-secret
+
+env:
+  brokerageServiceApiUrl: https://api.paidiver-brokerage-service.noc.ac.uk/api
+
+resources:
+  limits:
+    cpu: 400m
+    memory: 600Mi
+  requests:
+    cpu: 200m
+    memory: 300Mi

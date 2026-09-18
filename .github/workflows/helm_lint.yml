@@ -1,0 +1,14 @@
+name: Lint Helm Charts
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  helm-lint:
+    permissions:
+      contents: read
+    uses: paidiver/brokerage-service/.github/workflows/reusable-helm-lint.yml@main
+    with:
+      chart_dirs: deployment/charts
+

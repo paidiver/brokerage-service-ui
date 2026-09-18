@@ -1,8 +1,19 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { SearchParams } from 'src/models/search';
 
+declare global {
+  interface Window {
+    __BROKERAGE_SERVICE_CONFIG__?: {
+      brokerageServiceApiUrl?: string;
+    };
+  }
+}
+
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_BROKERAGE_SERVICE_API ?? 'https://brokerage-service.paidiver.site';
+  (typeof window !== 'undefined' &&
+    window.__BROKERAGE_SERVICE_CONFIG__?.brokerageServiceApiUrl) ||
+  (process.env.NEXT_PUBLIC_BROKERAGE_SERVICE_API ??
+    'https://brokerage-service-api.paidiver.site');
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

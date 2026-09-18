@@ -1,0 +1,14 @@
+ingress:
+  enabled: true
+  host: paidiver-brokerage-service.noc.ac.uk
+  path: ''
+  ingressClassName: nginx
+  tls:
+    - secretName: letsencrypt-brokerage-service-ui
+      hosts:
+        - paidiver-brokerage-service.noc.ac.uk
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-brokerage-service-ui
+
+env:
+  brokerageServiceApiUrl: https://brokerage-service-api.paidiver.site
