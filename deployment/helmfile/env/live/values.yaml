@@ -9,6 +9,3 @@ ingress:
         - paidiver-brokerage-service.noc.ac.uk
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-brokerage-service-ui
-
-env:
-  brokerageServiceApiUrl: https://brokerage-service-api.paidiver.site
