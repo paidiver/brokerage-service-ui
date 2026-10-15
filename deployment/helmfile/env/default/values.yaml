@@ -3,7 +3,7 @@ ingress:
   enabled: true
   path: ''
   pathType: Prefix
-  ingressClassName: nginx
+  ingressClassName: traefik
 
 image:
   repository: ghcr.io/paidiver/brokerage-service-ui

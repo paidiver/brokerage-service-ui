@@ -2,7 +2,7 @@ ingress:
   enabled: true
   host: paidiver-brokerage-service.noc.ac.uk
   path: ''
-  ingressClassName: nginx
+  ingressClassName: traefik
   tls:
     - secretName: letsencrypt-brokerage-service-ui
       hosts:
